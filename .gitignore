@@ -5,3 +5,9 @@ runs/
 
 */build/
 */runs/
+
+.idea/
+.project
+.classpath
+.settings/
+*.iml

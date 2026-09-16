@@ -6,6 +6,12 @@ dependencies {
     minecraft("com.mojang:minecraft:${minecraft_version}")
     implementation("net.fabricmc:fabric-loader:${fabric_loader_version}")
     implementation("net.fabricmc.fabric-api:fabric-api:${fabric_version}")
+    implementation("net.fabricmc.fabric-api:fabric-rendering-v1:${fabric_rendering_v1_version}")
+    compileOnly("com.geckolib:geckolib-fabric-${minecraft_version}:${geckolib_version}")
+    if (!project.hasProperty('without_geckolib')) {
+        runtimeOnly("com.geckolib:geckolib-fabric-${minecraft_version}:${geckolib_version}")
+    }
+    api("fuzs.forgeconfigapiport:forgeconfigapiport-fabric:${forge_config_api_port_version}")
 }
 
 loom {
@@ -19,6 +25,11 @@ loom {
             setConfigName('Fabric Client')
             ideConfigGenerated(true)
             runDir('runs/client')
+            vmArg('-Dbonehitboxlib.debugContacts=true')
+            vmArg('-Dbonehitboxlib.manualTestFeedback=true')
+            if (project.hasProperty('quickplay_world')) {
+                programArgs('--quickPlaySingleplayer', project.property('quickplay_world').toString())
+            }
         }
         server {
             server()

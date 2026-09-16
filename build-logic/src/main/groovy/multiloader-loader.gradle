@@ -25,6 +25,9 @@ dependencies {
 tasks.named('compileJava', JavaCompile) {
     dependsOn(configurations.commonJava)
     source(configurations.commonJava)
+    // CN: loader 会把 common 源码直接编入自身输出；切换可选 GeckoLib classpath 时必须完整重编，避免 javac 读取正被增量清理的旧 class。
+    // EN: Loaders compile common sources into their own output; optional GeckoLib classpath checks need a full compile so javac cannot read stale classes being incrementally removed.
+    options.incremental = !project.hasProperty('without_geckolib')
 }
 
 processResources {

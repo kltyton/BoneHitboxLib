@@ -18,6 +18,11 @@ neoForge {
         client {
             client()
             gameDirectory = this.mkdir(this.file('runs/client'))
+            jvmArgument('-Dbonehitboxlib.debugContacts=true')
+            jvmArgument('-Dbonehitboxlib.manualTestFeedback=true')
+            if (project.hasProperty('quickplay_world')) {
+                programArguments.addAll '--quickPlaySingleplayer', project.property('quickplay_world').toString()
+            }
         }
         data {
             clientData()
@@ -40,6 +45,14 @@ neoForge {
 }
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+dependencies {
+    compileOnly("com.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}")
+    if (!project.hasProperty('without_geckolib')) {
+        runtimeOnly("com.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}")
+    }
+    api("fuzs.forgeconfigapiport:forgeconfigapiport-neoforge:${forge_config_api_port_version}")
+}
 
 // Implement mcgradleconventions loader attribute
 def loaderAttribute = Attribute.of('io.github.mcgradleconventions.loader', String)

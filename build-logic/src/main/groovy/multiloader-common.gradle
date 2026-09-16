@@ -6,6 +6,28 @@ plugins {
 repositories {
     mavenLocal()
     mavenCentral()
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = 'GeckoLib'
+                url = uri('https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/')
+            }
+        }
+        filter {
+            includeGroupAndSubgroups('com.geckolib')
+        }
+    }
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = 'Fuzs Mod Resources'
+                url = uri('https://raw.githubusercontent.com/Fuzss/modresources/main/maven/')
+            }
+        }
+        filter {
+            includeGroupAndSubgroups('fuzs.forgeconfigapiport')
+        }
+    }
     maven {
         name = 'Fabric'
         url = uri('https://maven.fabricmc.net')
@@ -61,6 +83,9 @@ processResources {
             'minecraft_version_range'      : minecraft_version_range,
             'fabric_version'               : fabric_version,
             'fabric_loader_version'        : fabric_loader_version,
+            'fabric_rendering_v1_version'  : fabric_rendering_v1_version,
+            'geckolib_version'             : geckolib_version,
+            'forge_config_api_port_version': forge_config_api_port_version,
             'mod_name'                     : mod_name,
             'mod_author'                   : mod_author,
             'mod_id'                       : mod_id,
