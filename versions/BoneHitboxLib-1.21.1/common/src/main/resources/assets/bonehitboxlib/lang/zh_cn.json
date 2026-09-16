@@ -1,0 +1,10 @@
+{
+    "key.categories.bonehitboxlib": "BoneHitboxLib",
+    "key.bonehitboxlib.hold_obb": "显示 OBB 部位",
+    "entity.bonehitboxlib.obb_zombie_test": "OBB 僵尸测试",
+    "entity.bonehitboxlib.soft_obb_ravager_test": "软 OBB 劫掠兽测试",
+    "entity.bonehitboxlib.hard_obb_ravager_test": "硬 OBB 劫掠兽测试",
+    "entity.bonehitboxlib.gecko_obb_test_entity": "GeckoLib OBB 测试实体",
+    "entity.bonehitboxlib.gecko_soft_obb_test_vehicle": "GeckoLib 软 OBB 测试载具",
+    "entity.bonehitboxlib.gecko_hard_obb_test_vehicle": "GeckoLib 硬 OBB 测试载具"
+}

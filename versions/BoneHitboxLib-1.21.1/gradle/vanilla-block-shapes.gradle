@@ -1,0 +1,62 @@
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+import java.util.zip.ZipFile
+
+// Produce server-safe geometry data from the exact Minecraft artifact resolved by ModDev.
+def generatedShapes = layout.projectDirectory.dir('src/generated/resources')
+def minecraftArtifact = layout.buildDirectory.file("moddev/artifacts/vanilla-${neo_form_version}-client-extra-aka-minecraft-resources.jar")
+def generateVanillaBlockShapes = tasks.register('generateVanillaBlockShapes') {
+    group = 'data generation'
+    description = 'Extracts packaged vanilla block model geometry for both logical sides.'
+    dependsOn 'createMinecraftArtifacts'
+    inputs.file(minecraftArtifact)
+    outputs.file(generatedShapes.file('data/bonehitboxlib/block_shapes/vanilla.json'))
+    doLast {
+        def parser = new JsonSlurper()
+        def models = [:]
+        def states = [:]
+        new ZipFile(minecraftArtifact.get().asFile).withCloseable { zip ->
+            zip.entries().each { entry ->
+                if (entry.name.startsWith('assets/minecraft/models/block/') && entry.name.endsWith('.json')) {
+                    zip.getInputStream(entry).withCloseable { input ->
+                        models['minecraft:' + entry.name.substring('assets/minecraft/models/'.length(), entry.name.length() - 5)] = parser.parse(input)
+                    }
+                } else if (entry.name.startsWith('assets/minecraft/blockstates/') && entry.name.endsWith('.json')) {
+                    zip.getInputStream(entry).withCloseable { input ->
+                        states['minecraft:' + entry.name.substring('assets/minecraft/blockstates/'.length(), entry.name.length() - 5)] = parser.parse(input)
+                    }
+                }
+            }
+        }
+        def elementsFor = { String id ->
+            def current = id.contains(':') ? id : 'minecraft:' + id
+            def seen = [] as Set
+            while (seen.add(current) && seen.size() <= 16) {
+                def model = models[current]
+                if (model == null) { return [] }
+                if (model.elements != null) { return model.elements }
+                if (model.parent == null) { return [] }
+                current = model.parent.contains(':') ? model.parent : 'minecraft:' + model.parent
+            }
+            return []
+        }
+        def selectedStates = new TreeMap(states)
+        def selectedModels = new TreeMap()
+        models.keySet().each { id ->
+            selectedModels[id] = elementsFor(id).collect { element ->
+                element.findAll { key, ignored -> key in ['from', 'to', 'rotation'] }
+            }
+        }
+        if (selectedStates.isEmpty()) { throw new GradleException('No vanilla block models were extracted') }
+        def output = generatedShapes.file('data/bonehitboxlib/block_shapes/vanilla.json').asFile
+        output.parentFile.mkdirs()
+        output.setText(JsonOutput.toJson([minecraft: minecraft_version, states: selectedStates, models: selectedModels]) + '\n', 'UTF-8')
+        logger.lifecycle("Generated block model geometry: ${selectedStates.size()} blocks, ${selectedModels.size()} models")
+    }
+}
+sourceSets.main.resources.srcDir(generatedShapes)
+tasks.named('processResources') { dependsOn generateVanillaBlockShapes }
+tasks.named('sourcesJar') { dependsOn generateVanillaBlockShapes }
+artifacts {
+    commonResources(generatedShapes.asFile) { builtBy generateVanillaBlockShapes }
+}
