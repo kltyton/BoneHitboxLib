@@ -1,0 +1,2 @@
+8a91d3365ca96d1605666eeb454d1d16b6358d95296b3f3cfd3c62867c131fcb *bonehitboxlib-fabric-26.2-0.2.1.jar
+ae1b39e5ced229bff6ff6d3a5bcf5cd2bbce0e28995d4c48810010e10affb253 *bonehitboxlib-neoforge-26.2-0.2.1.jar
