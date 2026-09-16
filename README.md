@@ -1,5 +1,7 @@
 # BoneHitboxLib
 
+<p align="center"><img src="icon.png" alt="BoneHitboxLib" width="160"></p>
+
 [English](README.md) | [简体中文](README.zh-CN.md)
 
 A Minecraft library that derives oriented bounding boxes (OBBs) from model geometry. It provides part selection, combat and collision events, per-part state, model-based block shapes, and optional GeckoLib keyframe skills.

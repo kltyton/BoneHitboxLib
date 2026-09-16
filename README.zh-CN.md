@@ -1,5 +1,7 @@
 # BoneHitboxLib
 
+<p align="center"><img src="icon.png" alt="BoneHitboxLib" width="160"></p>
+
 [English](README.md) | [简体中文](README.zh-CN.md)
 
 从模型几何生成有向包围盒（OBB）的 Minecraft 库，提供部位选择、战斗与碰撞事件、逐部位状态、模型方块形状，以及可选的 GeckoLib 关键帧技能。
