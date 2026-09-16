@@ -1,10 +1,4 @@
 {
     "key.categories.bonehitboxlib": "BoneHitboxLib",
-    "key.bonehitboxlib.hold_obb": "Show OBB Part",
-    "entity.bonehitboxlib.obb_zombie_test": "OBB Zombie Test",
-    "entity.bonehitboxlib.soft_obb_ravager_test": "Soft OBB Ravager Test",
-    "entity.bonehitboxlib.hard_obb_ravager_test": "Hard OBB Ravager Test",
-    "entity.bonehitboxlib.gecko_obb_test_entity": "GeckoLib OBB Test Entity",
-    "entity.bonehitboxlib.gecko_soft_obb_test_vehicle": "GeckoLib Soft OBB Test Vehicle",
-    "entity.bonehitboxlib.gecko_hard_obb_test_vehicle": "GeckoLib Hard OBB Test Vehicle"
+    "key.bonehitboxlib.hold_obb": "Show OBB Part"
 }

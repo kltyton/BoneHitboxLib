@@ -13,10 +13,7 @@ Each source directory is an independent Gradle project. The root targets Minecra
 
 Fabric Loader is pinned to 0.19.3 in all projects. Fabric requires the matching Fabric API and Forge Config API Port. GeckoLib is optional; install it for GeckoLib models and keyframe skills. The Forge 1.20.1 package embeds MixinExtras.
 
-## Downloads
-
-- [0.2.1](releases/0.2.1): current 26.2 Fabric and NeoForge packages; [SHA-256 checksums](releases/0.2.1/SHA256SUMS.txt).
-- [0.2.0](releases/0.2.0): current packages for the three ports and archived 26.2 packages; [SHA-256 checksums](releases/0.2.0/SHA256SUMS.txt).
+## Build outputs
 
 Use the installable JAR, not a `-sources.jar` or `-javadoc.jar`. Version 0.2.1 exposes the element-based `ModelShapeCache` API in 26.2; that API change has not been backported. All four projects include the block whitelist, blacklist and default-off forced OBB option.
 
@@ -37,6 +34,5 @@ Use `:neoforge:runClient` for the other projects. `-Pwithout_geckolib` omits the
 
 The ports retain model OBBs, selection and highlights, held items, server synchronization and persistence, keyframe skills, and model-derived multi-cell blocks. Rendering, networking, NBT and GeckoLib calls use their respective target APIs. Model, animation and texture resources remain regular runtime assets; vanilla block geometry is generated from each pinned Minecraft version.
 
-Build and package validation do not establish gameplay, multiplayer, visual or performance correctness. `runClient` is only a world-entry/no-crash startup check. Feature acceptance is manual and is specific to the tested version and loader. Each project contains its own API docs and `测试清单.md`.
 
 See the main [README](../README.md) for integration examples, configuration and acknowledgements.

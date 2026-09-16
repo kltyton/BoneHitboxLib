@@ -30,7 +30,7 @@ Each version is an independent Gradle project. Use matching Minecraft, loader an
 
 Use the JAR for your Minecraft version and loader. Put it in `mods/` on both sides where the library is required. Fabric also requires its matching Fabric API and Forge Config API Port. GeckoLib is optional; install the matching version when using GeckoLib models or keyframe skills.
 
-The pinned dependency versions and package locations are listed in the [version guide](versions/README.md). Installable archives are kept under [versions/releases](versions/releases); use the accompanying `SHA256SUMS.txt` to check downloads. Files ending in `-sources.jar` or `-javadoc.jar` are developer artifacts, not installable mods.
+Pinned dependency versions are listed in the [version guide](versions/README.md). Build the matching loader project to produce an installable JAR. Files ending in `-sources.jar` or `-javadoc.jar` are developer artifacts, not installable mods.
 
 ## Entity integration
 
@@ -96,7 +96,6 @@ Entity poses and GeckoLib markers are client-assisted. The server validates trac
 
 Block physics uses packaged model elements. Client resource packs, animated renderers and special rendering paths do not automatically redefine server collision. Compatibility with dynamic blocks and other collision modifications requires integration testing.
 
-A successful build or world-entry startup check does not establish gameplay correctness, visual accuracy, multiplayer compatibility or performance. Feature acceptance is manual; see the version-specific checklists and [testing checklist](测试清单.md).
 
 ## Documentation
 

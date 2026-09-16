@@ -12,17 +12,11 @@ neoForge {
     }
     runs {
         configureEach {
-            systemProperty('neoforge.enabledGameTestNamespaces', mod_id)
             ideName = "NeoForge ${it.name.capitalize()} (${project.path})" // Unify the run config names with fabric
         }
         client {
             client()
             gameDirectory = this.mkdir(this.file('runs/client'))
-            jvmArgument('-Dbonehitboxlib.debugContacts=true')
-            jvmArgument('-Dbonehitboxlib.manualTestFeedback=true')
-            if (project.hasProperty('quickplay_world')) {
-                programArguments.addAll '--quickPlaySingleplayer', project.property('quickplay_world').toString()
-            }
         }
         data {
             data()

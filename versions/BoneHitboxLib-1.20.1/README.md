@@ -27,9 +27,8 @@ Run the bundled wrapper from this directory:
 .\gradlew.bat :forge:runClient
 ```
 
-Installable packages are in [releases/0.2.0](../releases/0.2.0), with [SHA-256 checksums](../releases/0.2.0/SHA256SUMS.txt). Build outputs are under each loader's build/libs directory. Fabric requires Fabric API and Forge Config API Port; GeckoLib is optional.
+Build outputs are under each loader's build/libs directory. Fabric requires Fabric API and Forge Config API Port; GeckoLib is optional.
 
-Build and startup success do not prove feature correctness. World-entry startup checks and [manual feature acceptance](测试清单.md) are separate; multiplayer and performance require their own validation.
 
 ## Acknowledgements and license
 

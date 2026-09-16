@@ -34,8 +34,8 @@ The source tree is grouped by responsibility. Parent packages are namespaces onl
 - `client.geometry.bounds`: captured visual-cube bounds / 捕获的视觉 cube 边界。
 - `client.selection.model`, `client.selection.service`: selection values and orchestration / 选择数据与编排服务。
 - `client.render.item`: hand/item-layer capture and first-person world-held pose extraction / 手臂、物品层捕获与第一人称世界持物姿态提取。
-- `client.render.outline`, `client.render.vanilla`, `client.render.example.vanilla`: render responsibilities / 轮廓、原版模型层与示例渲染。
-- `client.compat.geckolib.layer|model|renderer`: optional GeckoLib render integration / 可选 GeckoLib 渲染层、模型与渲染器。
+- `client.render.outline`, `client.render.vanilla`: render responsibilities / 轮廓与原版模型层。
+- `client.compat.geckolib.layer`: optional GeckoLib render integration / 可选 GeckoLib 渲染层。
 - `client.compat.geckolib.skill`, `client.skill.keyframe`: optional GeckoLib marker extraction, optional logical animation ticker, and deferred send queue / 可选 GeckoLib marker 提取、可选逻辑动画 ticker 与延迟发送队列。
 - `network.payload.contact|entity|selection|skill`, `network.protocol`: payloads separated from transport wiring / 按用途拆分的数据包与传输桥。
 - `server.combat.attack|damage`, `server.collision.contact|solver`, `server.hook.vanilla`: server hooks and the persistent-manifold impulse solver by gameplay responsibility / 按战斗、伤害、接触、冲量求解和原版挂钩职责拆分。
@@ -44,8 +44,7 @@ The source tree is grouped by responsibility. Parent packages are namespaces onl
 - `mixin.block`: model shapes, exact compound intersections and native entity movement integration / 模型形状、凸几何相交与原版实体移动接入。
 - `mixin.combat`, `mixin.combat.projectile`, `mixin.entity`, `mixin.entity.player|projectile`: common mixins by target behavior / 按目标行为拆分的公共 Mixin。
 - `mixin.client.collision`, `mixin.client.render`: client movement and rendering hooks / 客户端移动与渲染挂钩。
-- `example.entity.vanilla.ravager|zombie`, `example.entity.geckolib`: test entities kept outside library runtime packages / 与库运行时代码隔离的测试实体。
-- Fabric uses `event`, `network`, and `registry`; NeoForge uses `registry`. Loader root packages contain only their entrypoint. / Fabric 使用 `event`、`network`、`registry`，NeoForge 使用 `registry`；loader 根包仅保留入口类。
+- Loader modules contain their entrypoints, client hooks and transport wiring. / 加载器模块包含入口、客户端挂钩和网络接线。
 
 ## Breaking Package Migration / 破坏性包迁移
 
@@ -61,5 +60,4 @@ The package migration changes Java imports. Registry and persisted-data IDs rema
 | `client.hitbox`, `client.selection`, `client.render` | `client.geometry.bounds`, `client.selection.model|service`, focused render packages |
 | `network` | `network.protocol`, `network.payload.contact|entity|selection|skill` |
 | `server`, `server.sync` | focused `server.combat|collision|hook|network|selection|sync` packages |
-| `entity`, `entity.geckolib` | `example.entity.vanilla.*`, `example.entity.geckolib` |
 | root/common client mixin packages | focused `mixin.combat|entity|client` packages |

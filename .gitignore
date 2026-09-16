@@ -11,3 +11,14 @@ runs/
 .classpath
 .settings/
 *.iml
+
+.cache/
+logs/
+tmp/
+temp/
+*.log
+*.jar
+!**/gradle/wrapper/gradle-wrapper.jar
+测试清单.md
+/versions/releases/
+**/common/src/generated/resources/data/bonehitboxlib/block_shapes/vanilla.json

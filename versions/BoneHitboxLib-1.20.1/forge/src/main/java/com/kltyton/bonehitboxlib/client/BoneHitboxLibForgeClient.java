@@ -2,12 +2,8 @@ package com.kltyton.bonehitboxlib.client;
 
 import com.kltyton.bonehitboxlib.client.compat.geckolib.BoneHitboxLibForgeGeckoClient;
 
-
-import com.kltyton.bonehitboxlib.registry.BoneHitboxLibForgeRegistries;
 import com.kltyton.bonehitboxlib.Constants;
 import com.kltyton.bonehitboxlib.client.config.BoneHitboxClientOptions;
-import com.kltyton.bonehitboxlib.client.render.example.vanilla.ObbRavagerTestRenderer;
-import com.kltyton.bonehitboxlib.client.render.example.vanilla.ObbZombieTestRenderer;
 import com.kltyton.bonehitboxlib.client.selection.service.BonePartSelectionClient;
 import com.kltyton.bonehitboxlib.compat.geckolib.GeckoLibCompat;
 import com.kltyton.bonehitboxlib.network.protocol.BoneHitboxNetworking;
@@ -50,9 +46,6 @@ public final class BoneHitboxLibForgeClient {
     }
 
     private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
-        event.registerEntityRenderer(BoneHitboxLibForgeRegistries.OBB_ZOMBIE_TEST.get(), ObbZombieTestRenderer::new);
-        event.registerEntityRenderer(BoneHitboxLibForgeRegistries.SOFT_OBB_RAVAGER_TEST.get(), ObbRavagerTestRenderer::new);
-        event.registerEntityRenderer(BoneHitboxLibForgeRegistries.HARD_OBB_RAVAGER_TEST.get(), ObbRavagerTestRenderer::new);
         registerOptionalGeckoRenderers(event);
     }
 

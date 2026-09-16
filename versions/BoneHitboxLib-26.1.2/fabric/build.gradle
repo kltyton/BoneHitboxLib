@@ -25,11 +25,6 @@ loom {
             setConfigName('Fabric Client')
             ideConfigGenerated(true)
             runDir('runs/client')
-            vmArg('-Dbonehitboxlib.debugContacts=true')
-            vmArg('-Dbonehitboxlib.manualTestFeedback=true')
-            if (project.hasProperty('quickplay_world')) {
-                programArgs('--quickPlaySingleplayer', project.property('quickplay_world').toString())
-            }
         }
         server {
             server()

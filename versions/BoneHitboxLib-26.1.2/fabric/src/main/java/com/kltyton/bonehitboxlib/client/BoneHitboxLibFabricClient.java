@@ -2,9 +2,6 @@ package com.kltyton.bonehitboxlib.client;
 
 import com.kltyton.bonehitboxlib.client.compat.geckolib.BoneHitboxLibFabricGeckoClient;
 
-import com.kltyton.bonehitboxlib.registry.BoneHitboxLibFabricRegistries;
-import com.kltyton.bonehitboxlib.client.render.example.vanilla.ObbRavagerTestRenderer;
-import com.kltyton.bonehitboxlib.client.render.example.vanilla.ObbZombieTestRenderer;
 import com.kltyton.bonehitboxlib.client.render.vanilla.VanillaModelPartSelectionLayer;
 import com.kltyton.bonehitboxlib.client.config.BoneHitboxClientOptions;
 import com.kltyton.bonehitboxlib.client.selection.service.BonePartSelectionClient;
@@ -20,7 +17,6 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.LivingEntityRenderLayerRegistrationCallback;
 import net.fabricmc.fabric.api.event.player.AttackEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
@@ -58,9 +54,6 @@ public final class BoneHitboxLibFabricClient implements ClientModInitializer {
         });
 
         KeyMappingHelper.registerKeyMapping(BoneHitboxClientOptions.HOLD_OBB_KEY);
-        EntityRendererRegistry.register(BoneHitboxLibFabricRegistries.OBB_ZOMBIE_TEST, ObbZombieTestRenderer::new);
-        EntityRendererRegistry.register(BoneHitboxLibFabricRegistries.SOFT_OBB_RAVAGER_TEST, ObbRavagerTestRenderer::new);
-        EntityRendererRegistry.register(BoneHitboxLibFabricRegistries.HARD_OBB_RAVAGER_TEST, ObbRavagerTestRenderer::new);
         registerOptionalGeckoRenderers();
         ClientTickEvents.END_CLIENT_TICK.register(BonePartSelectionClient::clientTick);
         AttackEntityCallback.EVENT.register((player, level, hand, entity, hitResult) -> {

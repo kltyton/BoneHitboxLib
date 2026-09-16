@@ -1,8 +1,6 @@
 package com.kltyton.bonehitboxlib;
 
 import com.kltyton.bonehitboxlib.api.data.builtin.key.ObbBuiltinDataKeys;
-import com.kltyton.bonehitboxlib.diagnostic.physics.ObbPhysicsDebug;
-import com.kltyton.bonehitboxlib.example.testing.feedback.ObbManualTestFeedback;
 import com.kltyton.bonehitboxlib.server.combat.damage.ObbPartHealthHooks;
 
 /**
@@ -22,8 +20,6 @@ public final class BoneHitboxLibCommon {
         com.kltyton.bonehitboxlib.api.block.shape.VanillaBlockShapes.initialize();
         ObbBuiltinDataKeys.init();
         ObbPartHealthHooks.register();
-        ObbManualTestFeedback.register();
-        ObbPhysicsDebug.log("[ENABLED] contact physics diagnostics are active");
         Constants.LOG.info("{} initialized.", Constants.MOD_NAME);
     }
 }

@@ -1,8 +1,0 @@
-003e0da108df0cd5587ecf87297d5ec00e43893fd815245959ac206fb9e25aab *bonehitboxlib-neoforge-26.2-0.2.0.jar
-0e23eea9902f7cd5454e9d5032076b167afbc346f06ab04cc96c78dbc93c453e *bonehitboxlib-fabric-26.1.2-0.2.0.jar
-1633ebf4abc0e44d3fb0def49551df0fc5eb2de7edcb62255f10c41400f13802 *bonehitboxlib-neoforge-1.21.1-0.2.0.jar
-270ba3396d2e0af2e534b2b2a4bde48dec9d4c7da9bda0835759706e2eb1e691 *bonehitboxlib-forge-1.20.1-0.2.0.jar
-3359ca5a402152438f7f641622f72f1dbb0e02b2d0432665dcda50c59f01ee04 *bonehitboxlib-fabric-26.2-0.2.0.jar
-65e9cfe7da511d8bb3350eeb74b5a55d4fb94e526750796ad5746bf90d9bdc90 *bonehitboxlib-fabric-1.20.1-0.2.0.jar
-7573b61f5b104e312e8f09823fa52822cdf7059b9da3516de96aff113cbf028d *bonehitboxlib-neoforge-26.1.2-0.2.0.jar
-d2add21d980ce0675ac5dbba490f77d11e76dd2523ff2736120d6d7736016d66 *bonehitboxlib-fabric-1.21.1-0.2.0.jar

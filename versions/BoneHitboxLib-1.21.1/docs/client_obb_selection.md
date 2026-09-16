@@ -28,4 +28,4 @@ When `bonehitboxlib$onlyHitPartTurnsRed()` is true, a client attack suppresses t
 
 ## Package Layout / 包分类
 
-Packages are no longer broad class buckets. Bone, context, registration, state, client render/selection, payload, server hook, mixin, and example code are split into responsibility-specific leaf packages. See [Package Layout and Migration](package_layout.md) for the complete tree and breaking import migration. / 各目录不再作为扁平类容器；骨骼、上下文、注册、状态、客户端选择/渲染、数据包、服务端 hook、Mixin 与示例均拆入职责明确的叶子包。完整目录与破坏性 import 迁移见 [包结构与迁移](package_layout.md)。
+Packages are no longer broad class buckets. Bone, context, registration, state, client render/selection, payload, server hook, and mixin code are split into responsibility-specific leaf packages. See [Package Layout and Migration](package_layout.md) for the complete tree and breaking import migration. / 各目录不再作为扁平类容器；骨骼、上下文、注册、状态、客户端选择/渲染、数据包、服务端 hook、Mixin 均拆入职责明确的叶子包。完整目录与破坏性 import 迁移见 [包结构与迁移](package_layout.md)。

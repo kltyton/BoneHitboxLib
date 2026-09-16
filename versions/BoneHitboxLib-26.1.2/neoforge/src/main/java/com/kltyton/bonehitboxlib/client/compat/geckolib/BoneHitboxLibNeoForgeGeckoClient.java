@@ -6,8 +6,6 @@ import com.geckolib.constant.DataTickets;
 import com.geckolib.event.entity.CompileEntityRenderLayersEvent;
 import com.geckolib.event.entity.CompileEntityRenderStateEvent;
 import com.geckolib.renderer.base.GeoRenderer;
-import com.kltyton.bonehitboxlib.registry.BoneHitboxLibNeoForgeRegistries;
-import com.kltyton.bonehitboxlib.client.compat.geckolib.renderer.GeckoObbTestRenderer;
 import com.kltyton.bonehitboxlib.client.selection.service.BonePartSelectionClient;
 
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -38,17 +36,6 @@ public final class BoneHitboxLibNeoForgeGeckoClient {
 
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         registerEvents();
-        if (BoneHitboxLibNeoForgeRegistries.GECKO_OBB_TEST != null) {
-            event.registerEntityRenderer(BoneHitboxLibNeoForgeRegistries.GECKO_OBB_TEST.get(), GeckoObbTestRenderer::new);
-        }
-        if (BoneHitboxLibNeoForgeRegistries.GECKO_SOFT_OBB_TEST_VEHICLE != null) {
-            event.registerEntityRenderer(BoneHitboxLibNeoForgeRegistries.GECKO_SOFT_OBB_TEST_VEHICLE.get(),
-                    context -> new GeckoObbTestRenderer<>(context, 2.5F, 0.65F));
-        }
-        if (BoneHitboxLibNeoForgeRegistries.GECKO_HARD_OBB_TEST_VEHICLE != null) {
-            event.registerEntityRenderer(BoneHitboxLibNeoForgeRegistries.GECKO_HARD_OBB_TEST_VEHICLE.get(),
-                    context -> new GeckoObbTestRenderer<>(context, 2.5F, 0.65F));
-        }
     }
 
     private static void addEntityLayers(CompileEntityRenderLayersEvent event) {

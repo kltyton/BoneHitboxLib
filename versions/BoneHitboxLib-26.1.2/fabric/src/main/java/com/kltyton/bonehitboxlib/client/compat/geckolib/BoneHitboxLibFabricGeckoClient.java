@@ -6,11 +6,8 @@ import com.geckolib.constant.DataTickets;
 import com.geckolib.event.entity.CompileEntityRenderLayersEvent;
 import com.geckolib.event.entity.CompileEntityRenderStateEvent;
 import com.geckolib.renderer.base.GeoRenderer;
-import com.kltyton.bonehitboxlib.registry.BoneHitboxLibFabricRegistries;
-import com.kltyton.bonehitboxlib.client.compat.geckolib.renderer.GeckoObbTestRenderer;
 import com.kltyton.bonehitboxlib.client.selection.service.BonePartSelectionClient;
 
-import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.world.entity.LivingEntity;
 
@@ -27,17 +24,6 @@ public final class BoneHitboxLibFabricGeckoClient {
 
     public static void registerRenderers() {
         registerEvents();
-        if (BoneHitboxLibFabricRegistries.GECKO_OBB_TEST != null) {
-            EntityRendererRegistry.register(BoneHitboxLibFabricRegistries.GECKO_OBB_TEST, GeckoObbTestRenderer::new);
-        }
-        if (BoneHitboxLibFabricRegistries.GECKO_SOFT_OBB_TEST_VEHICLE != null) {
-            EntityRendererRegistry.register(BoneHitboxLibFabricRegistries.GECKO_SOFT_OBB_TEST_VEHICLE,
-                    context -> new GeckoObbTestRenderer<>(context, 2.5F, 0.65F));
-        }
-        if (BoneHitboxLibFabricRegistries.GECKO_HARD_OBB_TEST_VEHICLE != null) {
-            EntityRendererRegistry.register(BoneHitboxLibFabricRegistries.GECKO_HARD_OBB_TEST_VEHICLE,
-                    context -> new GeckoObbTestRenderer<>(context, 2.5F, 0.65F));
-        }
     }
 
     private static void registerEvents() {

@@ -2,7 +2,6 @@ package com.kltyton.bonehitboxlib.mixin.entity.player;
 
 import com.kltyton.bonehitboxlib.api.entity.BoneHitboxEntity;
 import com.kltyton.bonehitboxlib.api.registration.registrar.ObbBoneRegistrar;
-import com.kltyton.bonehitboxlib.example.testing.feedback.ObbManualTestFeedback;
 
 import net.minecraft.world.entity.player.Player;
 
@@ -17,10 +16,5 @@ public abstract class PlayerBoneHitboxMixin implements BoneHitboxEntity {
     @Override
     public void bonehitboxlib$registerObbBones(ObbBoneRegistrar registrar) {
         registrar.register(ObbBoneRegistrar.HUMAN_BASE);
-        if (ObbManualTestFeedback.enabled()) {
-            // CN: 仅用于人工触发玩家 OBB 碰撞攻击事件；正式运行不会添加该属性。
-            // EN: Only enables manual player OBB-contact attack tests; production runs do not add this attribute.
-            registrar.register("right_arm").attack();
-        }
     }
 }

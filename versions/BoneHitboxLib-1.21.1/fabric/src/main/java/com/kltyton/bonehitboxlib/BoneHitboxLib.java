@@ -2,7 +2,6 @@ package com.kltyton.bonehitboxlib;
 
 import com.kltyton.bonehitboxlib.event.BoneHitboxLibFabricEvents;
 import com.kltyton.bonehitboxlib.network.BoneHitboxLibFabricNetworking;
-import com.kltyton.bonehitboxlib.registry.BoneHitboxLibFabricRegistries;
 
 import com.kltyton.bonehitboxlib.config.common.BoneHitboxConfig;
 
@@ -27,7 +26,6 @@ public final class BoneHitboxLib implements ModInitializer {
     public void onInitialize() {
         NeoForgeConfigRegistry.INSTANCE.register(Constants.MOD_ID, ModConfig.Type.CLIENT, BoneHitboxConfig.CLIENT_SPEC);
         NeoForgeConfigRegistry.INSTANCE.register(Constants.MOD_ID, ModConfig.Type.SERVER, BoneHitboxConfig.SERVER_SPEC);
-        BoneHitboxLibFabricRegistries.init();
         BoneHitboxLibFabricNetworking.register();
         BoneHitboxLibFabricEvents.register();
         net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STARTING.register(

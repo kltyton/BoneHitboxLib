@@ -30,7 +30,7 @@
 
 选择匹配 Minecraft 版本和加载器的 JAR，放入需要此库的客户端与服务端 `mods/` 目录。Fabric 还需要匹配的 Fabric API 和 Forge Config API Port。GeckoLib 为可选依赖；使用 GeckoLib 模型或关键帧技能时安装对应版本。
 
-锁定依赖与包位置见[版本指南](versions/README.zh-CN.md)。可安装包保存在 [versions/releases](versions/releases)，下载后可通过对应的 `SHA256SUMS.txt` 校验。`-sources.jar`、`-javadoc.jar` 是开发资料，不是可安装模组。
+锁定依赖见[版本指南](versions/README.zh-CN.md)。构建对应加载器工程可得到安装包。`-sources.jar`、`-javadoc.jar` 是开发资料，不是可安装模组。
 
 ## 实体接入
 
@@ -96,7 +96,6 @@ blockModelBlacklist = ["minecraft:chest", "minecraft:trapped_chest"]
 
 方块物理使用已打包的模型元素。客户端资源包、动画渲染器和特殊渲染流程不会自动改变服务端碰撞。动态方块及其他碰撞修改需要进行兼容性验收。
 
-构建成功或进入存档不崩溃，不代表玩法、视觉、多人兼容或性能已验证。功能由用户人工验收，参见各版本清单和[测试清单](测试清单.md)。
 
 ## 文档
 

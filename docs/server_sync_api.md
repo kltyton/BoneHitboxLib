@@ -230,8 +230,6 @@ Contact events still retain every bone pair. Local hard movement treats nearby h
 
 For player-to-hard-entity pushing, the report carries the local player's movement. The server projects it onto a stable root-to-root direction and transfers only positive approach as a capped velocity impulse; it no longer moves the collider by the whole penetration vector. A stationary player or an animated bone that merely changes its MTV cannot add velocity. / 玩家推动硬碰撞实体时，报告会携带本地玩家移动；服务端将其投影到稳定的根节点连线方向，只把正向接近量作为有上限的速度冲量传递，不再按完整穿透向量移动碰撞实体。静止玩家或仅改变 MTV 的动画骨骼不会增加速度。
 
-Development environments automatically enable structured diagnostics; the generated `runClient` configurations also pass `-Dbonehitboxlib.debugContacts=true`. Filter `latest.log` by `[OBB-PHYS]` to correlate candidates, `[MANIFOLD]` normal/depth, impulses, small corrections, and client sweep results. Packaged builds remain quiet unless the same JVM property is supplied. / 开发环境会自动启用结构化诊断，生成的 `runClient` 配置也会传入 `-Dbonehitboxlib.debugContacts=true`；在 `latest.log` 中筛选 `[OBB-PHYS]` 可关联候选接触、`[MANIFOLD]` 法线/深度、冲量、小幅纠偏与客户端 sweep 结果。正式打包环境只有显式提供同一 JVM 参数时才输出这些日志。
-
 Mark a hard-collision bone as a moving support surface / 将硬碰撞骨骼标记为可移动承载表面：
 
 ```java
@@ -246,17 +244,6 @@ Support selection is shared by Fabric and NeoForge. Five foot samples cast verti
 
 For walkable slopes, the center-foot ray owns the support height. Corner samples are consulted only while the center is outside the finite face, and their contact plane is projected back to the player center before calculating height. The final sweep cannot move above that center-plane height. This prevents an uphill corner sample from acting as an artificial step or trampoline. / 对可行走斜面，支撑高度以脚底中心射线为准；只有中心离开有限面时才使用角点，并先把角点接触平面投影回玩家中心再计算高度。最终 sweep 也不能高于该中心平面，因此上坡侧角点不会再被当成人工台阶或蹦床。
 
-The Ravager and Gecko vehicle test entities keep normal vanilla dimensions for stable terrain/block grounding. The library-wide push replacement above leaves entity separation, standing, pushing, and carrying to model-derived OBB contacts. / 劫掠兽与 Gecko 载具测试实体保留正常原版尺寸以稳定处理地形/方块落地；上述库级推挤替换会把实体间分离、站立、推动与承载交给模型 OBB 接触。
-
-## Test Entities / 测试实体
-
-- `bonehitboxlib:obb_zombie_test`
-- `bonehitboxlib:soft_obb_ravager_test`
-- `bonehitboxlib:hard_obb_ravager_test`
-- `bonehitboxlib:gecko_obb_test_entity` (when GeckoLib is installed / 安装 GeckoLib 时)
-- `bonehitboxlib:gecko_soft_obb_test_vehicle` (when GeckoLib is installed / 安装 GeckoLib 时)
-- `bonehitboxlib:gecko_hard_obb_test_vehicle` (when GeckoLib is installed / 安装 GeckoLib 时)
-
 ## Operational Limits / 运行边界
 
 - No rendering client means no fresh visual-model snapshots or client contact reports. / 没有客户端渲染时，不会产生新的视觉模型快照或接触报告。
@@ -269,4 +256,4 @@ The Ravager and Gecko vehicle test entities keep normal vanilla dimensions for s
 
 Entity snapshot payloads now use `bonehitboxlib:entity_parts_v3`; NeoForge transport uses version `3`. Both sides must run a matching build. Existing entity save keys remain unchanged. Server snapshot, contact, selection and skill tables clear on server shutdown. / 实体快照包升级为 `bonehitboxlib:entity_parts_v3`，NeoForge 传输版本为 `3`，两端需使用匹配构建；实体存档键不变。服务端关闭时清除快照、接触、选择和技能运行表。
 
-Spatial broad-phase filtering and per-tick reuse reduce unnecessary pair checks; worst-case dense contacts remain quadratic. No worker thread reads mutable world state or render poses, and no measured speedup is claimed. Functional checks, including multiplayer abuse resistance and rotating/high-speed contacts, are manual under this project's rules. / 空间粗筛和同 tick 复用减少无效比较，密集接触的最坏复杂度仍为平方级；没有把可变世界状态或渲染姿态交给工作线程，也未声称测得加速比例。联机滥用防护、旋转/高速接触等功能检查按项目规则由用户人工完成。
+Spatial broad-phase filtering and per-tick reuse reduce unnecessary pair checks; worst-case dense contacts remain quadratic. No worker thread reads mutable world state or render poses, and no measured speedup is claimed. / 空间粗筛和同 tick 复用减少无效比较，密集接触的最坏复杂度仍为平方级；没有把可变世界状态或渲染姿态交给工作线程，也未声称测得加速比例。

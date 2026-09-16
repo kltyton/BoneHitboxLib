@@ -55,6 +55,7 @@ java {
 }
 
 tasks.withType(Jar).configureEach {
+    includeEmptyDirs = false
     from(rootProject.file('LICENSE')) {
         rename { "${it}_${mod_name}" }
     }

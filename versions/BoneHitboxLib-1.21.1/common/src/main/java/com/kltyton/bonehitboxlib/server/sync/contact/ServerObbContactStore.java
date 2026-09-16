@@ -14,7 +14,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-import com.kltyton.bonehitboxlib.Constants;
 import com.kltyton.bonehitboxlib.api.bone.attribute.ObbBoneAttribute;
 import com.kltyton.bonehitboxlib.api.bone.key.ObbBoneKey;
 import com.kltyton.bonehitboxlib.api.bone.collision.ObbCollisionMode;
@@ -23,7 +22,6 @@ import com.kltyton.bonehitboxlib.api.context.collision.ObbCollisionPhase;
 import com.kltyton.bonehitboxlib.api.context.collision.ObbContactKind;
 import com.kltyton.bonehitboxlib.api.entity.BoneHitboxEntity;
 import com.kltyton.bonehitboxlib.api.state.runtime.ObbBoneState;
-import com.kltyton.bonehitboxlib.diagnostic.physics.ObbPhysicsDebug;
 import com.kltyton.bonehitboxlib.network.payload.contact.ObbContactReportPayload;
 import com.kltyton.bonehitboxlib.server.collision.contact.BoneHitboxCollisionHooks;
 import com.kltyton.bonehitboxlib.server.collision.solver.ObbSequentialImpulseSolver;
@@ -41,7 +39,6 @@ import net.minecraft.world.phys.Vec3;
  * EN: Receives trusted client OBB contacts, canonicalizes/deduplicates bone pairs, and applies independent OBB physics.
  */
 public final class ServerObbContactStore {
-    private static final boolean DEBUG_CONTACTS = ObbPhysicsDebug.enabled();
     private static final long REPORTER_TIMEOUT_TICKS = 20L;
     private static final long ATTACK_TIMEOUT_TICKS = 10L;
     private static final double MAX_CORRECTION = 4.0;
@@ -68,17 +65,6 @@ public final class ServerObbContactStore {
         REPORTED_PLAYER_MOVEMENTS.put(
                 reporter.getUUID(),
                 new ReportedPlayerMovement(finiteCorrection(payload.reporterMovement()), level.getServer().getTickCount()));
-        if (DEBUG_CONTACTS) {
-            ObbPhysicsDebug.log(
-                    "[REPORT] serverTick={} levelTick={} observedTick={} reporter={}#{} movement={} contacts={}",
-                    level.getServer().getTickCount(),
-                    level.getGameTime(),
-                    payload.observedGameTime(),
-                    reporter.getScoreboardName(),
-                    reporter.getId(),
-                    payload.reporterMovement(),
-                    payload.contacts().size());
-        }
         for (ObbContactReportPayload.Contact contact : payload.contacts()) {
             Entity first = level.getEntity(contact.firstEntityId());
             Entity second = level.getEntity(contact.secondEntityId());
@@ -97,33 +83,9 @@ public final class ServerObbContactStore {
                 handleAttack(reporter, gameTime, payload.observedGameTime(),
                         first, firstHitbox, second, secondHitbox, contact);
             } else {
-                if (DEBUG_CONTACTS && contact.collisionMode() != ObbCollisionMode.NONE) {
-                    ObbPhysicsDebug.log(
-                            "[CONTACT] serverTick={} observedTick={} reporter={} phase={} first={}#{} bone={} second={}#{} bone={} mode={} correction={}",
-                            level.getServer().getTickCount(),
-                            payload.observedGameTime(),
-                            reporter.getScoreboardName(),
-                            contact.phase(),
-                            first.getScoreboardName(),
-                            first.getId(),
-                            contact.firstBone().displayName(),
-                            second.getScoreboardName(),
-                            second.getId(),
-                            contact.secondBone().displayName(),
-                            contact.collisionMode(),
-                            contact.correction());
-                }
                 handleCollision(reporter, gameTime, payload.observedGameTime(),
                         first, firstHitbox, second, secondHitbox, contact);
             }
-        }
-        if (DEBUG_CONTACTS && gameTime % 20L == 0L) {
-            Constants.LOG.info(
-                    "OBB server contacts: reporter={}, received={}, activeCollisions={}, activeAttacks={}",
-                    reporter.getScoreboardName(),
-                    payload.contacts().size(),
-                    ACTIVE_COLLISIONS.size(),
-                    ACTIVE_ATTACKS.size());
         }
     }
 
@@ -275,10 +237,6 @@ public final class ServerObbContactStore {
 
         Set<PhysicalPairKey> dirtyPairs = Set.copyOf(DIRTY_PHYSICAL_PAIRS);
         DIRTY_PHYSICAL_PAIRS.clear();
-        if (DEBUG_CONTACTS) {
-            ObbPhysicsDebug.log("[BATCH] serverTick={} dirtyPairs={} activeBoneContacts={}",
-                    serverTick, dirtyPairs.size(), ACTIVE_COLLISIONS.size());
-        }
         Map<PhysicalPairKey, List<ActiveCollision>> contactsByPair = new LinkedHashMap<>();
         for (ActiveCollision active : ACTIVE_COLLISIONS.values()) {
             if (!dirtyPairs.contains(active.physicalPairKey())) {
@@ -296,41 +254,6 @@ public final class ServerObbContactStore {
             }
             manifold.normal = contact.normal;
             manifold.lastSolvedTick = serverTick;
-            if (DEBUG_CONTACTS) {
-                for (ActiveCollision candidate : entry.getValue()) {
-                    ObbPhysicsDebug.log(
-                            "[CANDIDATE] serverTick={} pair={}#{}<->{}#{} firstBone={} secondBone={} mode={} correction={} priority={}",
-                            serverTick,
-                            candidate.first.getScoreboardName(),
-                            candidate.first.getId(),
-                            candidate.second.getScoreboardName(),
-                            candidate.second.getId(),
-                            candidate.firstBone.key().displayName(),
-                            candidate.secondBone.key().displayName(),
-                            candidate.collisionMode,
-                            candidate.correction,
-                            contactStabilityPriority(candidate));
-                }
-                ObbPhysicsDebug.log(
-                        "[MANIFOLD] serverTick={} pair={}#{}<->{}#{} candidates={} firstBone={} secondBone={} mode={} normal={} depth={} support={} previousImpulse={} firstPos={} secondPos={} firstVelocity={} secondVelocity={}",
-                        serverTick,
-                        contact.representative.first.getScoreboardName(),
-                        contact.representative.first.getId(),
-                        contact.representative.second.getScoreboardName(),
-                        contact.representative.second.getId(),
-                        entry.getValue().size(),
-                        contact.representative.firstBone.key().displayName(),
-                        contact.representative.secondBone.key().displayName(),
-                        contact.collisionMode,
-                        contact.normal,
-                        contact.depth,
-                        contact.verticalSupport,
-                        manifold.normalImpulse,
-                        contact.representative.first.position(),
-                        contact.representative.second.position(),
-                        contact.representative.first.getDeltaMovement(),
-                        contact.representative.second.getDeltaMovement());
-            }
             applyPhysicalResponse(contact, manifold, serverTick);
         }
     }
@@ -479,37 +402,13 @@ public final class ServerObbContactStore {
             return;
         }
         if (contact.collisionMode == ObbCollisionMode.SOFT) {
-            if (DEBUG_CONTACTS) {
-                Constants.LOG.info("Applying SOFT OBB response: {} <-> {}, normal={}, depth={}",
-                        active.first.getScoreboardName(), active.second.getScoreboardName(),
-                        contact.normal, contact.depth);
-            }
-            applySoftResponse(contact, manifold, serverTick);
+            applySoftResponse(contact, manifold);
             return;
         }
 
         Vec3 correction = contact.normal.scale(contact.depth);
-        if (DEBUG_CONTACTS) {
-            ObbPhysicsDebug.log(
-                    "[HARD_PREPARE] serverTick={} pair={}#{}<->{}#{} correction={} verticalSupport={} firstRootY={} secondRootY={}",
-                    serverTick,
-                    active.first.getScoreboardName(),
-                    active.first.getId(),
-                    active.second.getScoreboardName(),
-                    active.second.getId(),
-                    correction,
-                    contact.verticalSupport,
-                    active.first.getY(),
-                    active.second.getY());
-        }
 
         if (active.first instanceof ServerPlayer && active.second instanceof ServerPlayer) {
-            ObbPhysicsDebug.log("[SKIP] serverTick={} reason=both_players_client_owned pair={}#{}<->{}#{}",
-                    serverTick,
-                    active.first.getScoreboardName(),
-                    active.first.getId(),
-                    active.second.getScoreboardName(),
-                    active.second.getId());
             return;
         }
         if (active.first instanceof ServerPlayer firstPlayer) {
@@ -545,26 +444,12 @@ public final class ServerObbContactStore {
         manifold.normalImpulse = solution.normalImpulse();
         applyVelocityDelta(active.first, solution.firstVelocityDelta());
         applyVelocityDelta(active.second, solution.secondVelocityDelta());
-        applyPositionCorrection(active.first, solution.firstPositionCorrection(), serverTick, "manifold_first");
-        applyPositionCorrection(active.second, solution.secondPositionCorrection(), serverTick, "manifold_second");
+        applyPositionCorrection(active.first, solution.firstPositionCorrection());
+        applyPositionCorrection(active.second, solution.secondPositionCorrection());
         applyCarrying(active, serverTick);
-        if (DEBUG_CONTACTS) {
-            ObbPhysicsDebug.log(
-                    "[HARD_SOLVE] serverTick={} pair={}#{}<->{}#{} normalImpulse={} firstVelocityDelta={} secondVelocityDelta={} firstCorrection={} secondCorrection={}",
-                    serverTick,
-                    active.first.getScoreboardName(),
-                    active.first.getId(),
-                    active.second.getScoreboardName(),
-                    active.second.getId(),
-                    solution.normalImpulse(),
-                    solution.firstVelocityDelta(),
-                    solution.secondVelocityDelta(),
-                    solution.firstPositionCorrection(),
-                    solution.secondPositionCorrection());
-        }
     }
 
-    private static void applySoftResponse(PhysicalContact contact, PersistentManifold manifold, long serverTick) {
+    private static void applySoftResponse(PhysicalContact contact, PersistentManifold manifold) {
         ActiveCollision active = contact.representative;
         ObbSequentialImpulseSolver.Solution solution = ObbSequentialImpulseSolver.solveSoft(
                 new ObbSequentialImpulseSolver.Contact(
@@ -576,26 +461,8 @@ public final class ServerObbContactStore {
                         inverseMass(active.second),
                         false));
         manifold.normalImpulse = solution.normalImpulse();
-        Vec3 firstVelocityBefore = active.first.getDeltaMovement();
-        Vec3 secondVelocityBefore = active.second.getDeltaMovement();
         applyVelocityDelta(active.first, solution.firstVelocityDelta());
         applyVelocityDelta(active.second, solution.secondVelocityDelta());
-        if (DEBUG_CONTACTS) {
-            ObbPhysicsDebug.log(
-                    "[SOFT_SOLVE] serverTick={} pair={}#{}<->{}#{} normal={} depth={} impulse={} firstVelocity={}=>{} secondVelocity={}=>{}",
-                    serverTick,
-                    active.first.getScoreboardName(),
-                    active.first.getId(),
-                    active.second.getScoreboardName(),
-                    active.second.getId(),
-                    contact.normal,
-                    contact.depth,
-                    solution.normalImpulse(),
-                    firstVelocityBefore,
-                    active.first.getDeltaMovement(),
-                    secondVelocityBefore,
-                    active.second.getDeltaMovement());
-        }
     }
 
     private static double inverseMass(Entity entity) {
@@ -614,11 +481,11 @@ public final class ServerObbContactStore {
         pushEntity(entity, delta);
     }
 
-    private static void applyPositionCorrection(Entity entity, Vec3 correction, long serverTick, String branch) {
+    private static void applyPositionCorrection(Entity entity, Vec3 correction) {
         if (entity instanceof ServerPlayer || !entity.isPushable() || correction.lengthSqr() <= 1.0E-12) {
             return;
         }
-        moveOutOfHardObb(entity, correction, serverTick, branch);
+        moveOutOfHardObb(entity, correction);
     }
 
     private static void pushEntity(Entity entity, Vec3 push) {
@@ -637,24 +504,9 @@ public final class ServerObbContactStore {
         double horizontalDepth = Math.sqrt(horizontalLengthSqr(playerCorrection));
         if (playerCorrection.y() > 0.0 && playerCorrection.y() >= horizontalDepth * MIN_SUPPORT_NORMAL_Y
                 || isPlayerOnCarryingSurface(player, collider)) {
-            ObbPhysicsDebug.log(
-                    "[SKIP] serverTick={} reason=player_support player={}#{} collider={}#{} correction={}",
-                    serverTick,
-                    player.getScoreboardName(),
-                    player.getId(),
-                    collider.getScoreboardName(),
-                    collider.getId(),
-                    playerCorrection);
             return;
         }
         if (!collider.isPushable()) {
-            ObbPhysicsDebug.log(
-                    "[SKIP] serverTick={} reason=collider_not_pushable player={}#{} collider={}#{}",
-                    serverTick,
-                    player.getScoreboardName(),
-                    player.getId(),
-                    collider.getScoreboardName(),
-                    collider.getId());
             return;
         }
 
@@ -676,39 +528,11 @@ public final class ServerObbContactStore {
         direction = direction.normalize();
         double approachDistance = playerMovement.dot(direction);
         if (approachDistance <= 1.0E-4) {
-            ObbPhysicsDebug.log(
-                    "[SKIP] serverTick={} reason=player_not_approaching player={}#{} collider={}#{} reportedMovement={} direction={} approachDistance={} correction={}",
-                    serverTick,
-                    player.getScoreboardName(),
-                    player.getId(),
-                    collider.getScoreboardName(),
-                    collider.getId(),
-                    playerMovement,
-                    direction,
-                    approachDistance,
-                    playerCorrection);
             return;
         }
 
         Vec3 transfer = direction.scale(Math.min(0.18, approachDistance * 0.8));
-        Vec3 velocityBefore = collider.getDeltaMovement();
         pushEntity(collider, transfer);
-        if (DEBUG_CONTACTS) {
-            ObbPhysicsDebug.log(
-                    "[PLAYER_TRANSFER] serverTick={} player={}#{} collider={}#{} reportedMovement={} direction={} approachDistance={} impulse={} velocity={}=>{} correction={}",
-                    serverTick,
-                    player.getScoreboardName(),
-                    player.getId(),
-                    collider.getScoreboardName(),
-                    collider.getId(),
-                    playerMovement,
-                    direction,
-                    approachDistance,
-                    transfer,
-                    velocityBefore,
-                    collider.getDeltaMovement(),
-                    playerCorrection);
-        }
     }
 
     private static boolean isPlayerOnCarryingSurface(ServerPlayer player, Entity collider) {
@@ -738,9 +562,7 @@ public final class ServerObbContactStore {
                 : active.second.getY() >= active.first.getY() + MIN_SUPPORT_ROOT_OFFSET;
     }
 
-    private static void moveOutOfHardObb(Entity moving, Vec3 movement, long serverTick, String branch) {
-        Vec3 positionBefore = moving.position();
-        Vec3 velocityBefore = moving.getDeltaMovement();
+    private static void moveOutOfHardObb(Entity moving, Vec3 movement) {
         moving.move(MoverType.SHULKER_BOX, movement);
         Vec3 velocity = moving.getDeltaMovement();
         Vec3 normal = movement.lengthSqr() <= 1.0E-12 ? Vec3.ZERO : movement.normalize();
@@ -759,23 +581,6 @@ public final class ServerObbContactStore {
         if (movement.y() > 1.0E-5) {
             moving.setOnGroundWithMovement(true, movement);
             moving.resetFallDistance();
-        }
-        if (DEBUG_CONTACTS) {
-            ObbPhysicsDebug.log(
-                    "[HARD_APPLY] serverTick={} branch={} entity={}#{} requestedMovement={} actualMovement={} position={}=>{} velocity={}=>{} horizontalCollision={} verticalCollision={} verticalBelow={}",
-                    serverTick,
-                    branch,
-                    moving.getScoreboardName(),
-                    moving.getId(),
-                    movement,
-                    moving.position().subtract(positionBefore),
-                    positionBefore,
-                    moving.position(),
-                    velocityBefore,
-                    moving.getDeltaMovement(),
-                    moving.horizontalCollision,
-                    moving.verticalCollision,
-                    moving.verticalCollisionBelow);
         }
     }
 
@@ -821,25 +626,9 @@ public final class ServerObbContactStore {
 
         Vec3 movement = finiteCorrection(partMotion.movement());
         if (movement.lengthSqr() > 1.0E-10) {
-            Vec3 positionBefore = passenger.position();
             passenger.move(MoverType.SHULKER_BOX, movement);
             passenger.setOnGroundWithMovement(true, movement);
             passenger.resetFallDistance();
-            if (DEBUG_CONTACTS) {
-                ObbPhysicsDebug.log(
-                        "[CARRY] serverTick={} carrier={}#{} bone={} passenger={}#{} snapshotTick={} requestedMovement={} actualMovement={} position={}=>{}",
-                        serverTick,
-                        carrier.getScoreboardName(),
-                        carrier.getId(),
-                        carrierBone.key().displayName(),
-                        passenger.getScoreboardName(),
-                        passenger.getId(),
-                        partMotion.snapshotGameTime(),
-                        movement,
-                        passenger.position().subtract(positionBefore),
-                        positionBefore,
-                        passenger.position());
-            }
         }
         return true;
     }

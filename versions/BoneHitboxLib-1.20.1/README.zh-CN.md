@@ -27,9 +27,8 @@
 .\gradlew.bat :forge:runClient
 ```
 
-可安装包位于 [releases/0.2.0](../releases/0.2.0)，附有 [SHA-256 校验值](../releases/0.2.0/SHA256SUMS.txt)。构建产物位于各加载器的 build/libs 目录。Fabric 需要 Fabric API 和 Forge Config API Port；GeckoLib 为可选依赖。
+构建产物位于各加载器的 build/libs 目录。Fabric 需要 Fabric API 和 Forge Config API Port；GeckoLib 为可选依赖。
 
-构建和启动成功不代表功能验收通过。进入存档启动检查与[功能人工验收](测试清单.md)分别进行；多人和性能需要单独验证。
 
 ## 鸣谢与许可证
 

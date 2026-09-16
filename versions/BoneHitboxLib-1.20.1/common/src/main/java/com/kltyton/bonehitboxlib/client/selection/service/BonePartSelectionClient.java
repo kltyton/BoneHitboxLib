@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import com.kltyton.bonehitboxlib.Constants;
 import com.kltyton.bonehitboxlib.api.bone.attribute.ObbBoneAttribute;
 import com.kltyton.bonehitboxlib.api.bone.key.ObbBoneKey;
 import com.kltyton.bonehitboxlib.api.bone.builtin.ObbBuiltinBones;
@@ -26,7 +25,6 @@ import com.kltyton.bonehitboxlib.api.geckolib.state.GeoObbAnimationState;
 import com.kltyton.bonehitboxlib.api.state.runtime.ObbBoneState;
 import com.kltyton.bonehitboxlib.client.config.BoneHitboxClientOptions;
 import com.kltyton.bonehitboxlib.client.geometry.bounds.PartBounds;
-import com.kltyton.bonehitboxlib.diagnostic.physics.ObbPhysicsDebug;
 import com.kltyton.bonehitboxlib.network.protocol.BoneHitboxNetworking;
 import com.kltyton.bonehitboxlib.network.payload.contact.ObbContactReportPayload;
 import com.kltyton.bonehitboxlib.network.payload.entity.ObbEntityPartsPayload;
@@ -51,7 +49,6 @@ import org.joml.Vector3fc;
  * EN: Client-side model-part crosshair selection, debug rendering, and server OBB state sync.
  */
 public final class BonePartSelectionClient {
-    private static final boolean DEBUG_CONTACTS = ObbPhysicsDebug.enabled();
     private static final Object LOCK = new Object();
     private static final double PICK_RANGE = 64.0;
     private static final int STATE_SYNC_INTERVAL_TICKS = 1;
@@ -207,24 +204,6 @@ public final class BonePartSelectionClient {
                 }
             }
             Vec3 clipped = clipHardCompoundMovement(player, resolved, support);
-            if (DEBUG_CONTACTS && (support != null || clipped.distanceToSqr(vanillaMovement) > 1.0E-12)) {
-                ObbPhysicsDebug.log(
-                        "[CLIENT_MOVE] observedTick={} player={}#{} position={} requested={} vanilla={} preSweep={} resolved={} supportEntity={} supportBone={} supportHeight={} supportNormal={} supportSampleDistance={} playerVelocity={}",
-                        minecraft.level.getGameTime(),
-                        player.getScoreboardName(),
-                        player.getId(),
-                        player.position(),
-                        requestedMovement,
-                        vanillaMovement,
-                        resolved,
-                        clipped,
-                        support == null ? -1 : support.carrierEntityId(),
-                        support == null ? "none" : support.surface().bone().key().displayName(),
-                        support == null ? Double.NaN : support.height(),
-                        support == null ? Vec3.ZERO : support.normal(),
-                        support == null ? Double.NaN : Math.sqrt(support.sampleDistanceSqr()),
-                        player.getDeltaMovement());
-            }
             return clipped;
         }
     }
@@ -490,25 +469,6 @@ public final class BonePartSelectionClient {
             }
         }
 
-        if (DEBUG_CONTACTS) {
-            long physicalContacts = current.values().stream()
-                    .filter(candidate -> candidate.kind == ObbContactKind.COLLISION)
-                    .filter(candidate -> candidate.collisionMode != ObbCollisionMode.NONE)
-                    .count();
-            if (physicalContacts > 0L) {
-                ObbPhysicsDebug.log(
-                        "[CLIENT_REPORT] observedTick={} player={}#{} movement={} groupedEntities={} groupedParts={} contacts={} physicalContacts={}",
-                        minecraft.level.getGameTime(),
-                        minecraft.player.getScoreboardName(),
-                        minecraft.player.getId(),
-                        minecraft.player.getDeltaMovement(),
-                        grouped.size(),
-                        grouped.values().stream().mapToInt(value -> value.parts.size()).sum(),
-                        current.size(),
-                        physicalContacts);
-            }
-        }
-
         Map<Integer, CarrierPose> currentCarrierPoses = collectCarrierPoses(minecraft, grouped.keySet());
         applyLocalPhysicalResponses(minecraft, current, currentCarrierPoses);
         PREVIOUS_CARRIER_POSES.clear();
@@ -532,18 +492,6 @@ public final class BonePartSelectionClient {
         }
         ACTIVE_CONTACTS.clear();
         ACTIVE_CONTACTS.putAll(current);
-
-        if (DEBUG_CONTACTS && stateSyncTicks % 20 == 0) {
-            int partCount = grouped.values().stream().mapToInt(value -> value.parts.size()).sum();
-            Constants.LOG.info(
-                    "OBB client contacts: renderedParts={}, syntheticParts={}, groupedEntities={}, groupedParts={}, activeContacts={}, reports={}",
-                    RECORDED_PARTS.size(),
-                    syntheticParts.size(),
-                    grouped.size(),
-                    partCount,
-                    current.size(),
-                    reports.size());
-        }
 
         if (reports.isEmpty()) {
             return null;
@@ -756,16 +704,6 @@ public final class BonePartSelectionClient {
             double inward = leftover.dot(contactNormal);
             if (inward < 0.0) {
                 leftover = leftover.subtract(contactNormal.scale(inward));
-            }
-            if (DEBUG_CONTACTS && contactNormal.distanceToSqr(contact.hit().normal()) > 1.0E-10) {
-                ObbPhysicsDebug.log(
-                        "[CLIENT_NORMAL] observedTick={} carrierEntity={} rawNormal={} stableNormal={} resolved={} remaining={}",
-                        player.level().getGameTime(),
-                        contact.surface().carrierEntityId(),
-                        contact.hit().normal(),
-                        contactNormal,
-                        resolved,
-                        remaining);
             }
             if (step.lengthSqr() <= 1.0E-14 && leftover.distanceToSqr(remaining) <= 1.0E-14) {
                 break;
@@ -1034,21 +972,6 @@ public final class BonePartSelectionClient {
             return;
         }
         player.push(normal.x() * playerDeltaSpeed, 0.0, normal.z() * playerDeltaSpeed);
-        if (DEBUG_CONTACTS) {
-            ObbPhysicsDebug.log(
-                    "[CLIENT_SOFT] observedTick={} player={}#{} other={}#{} correction={} depth={} penetration={} closingSpeed={} impulse={} playerVelocity={}",
-                    player.level().getGameTime(),
-                    player.getScoreboardName(),
-                    player.getId(),
-                    other.getScoreboardName(),
-                    other.getId(),
-                    correction,
-                    depth,
-                    penetration,
-                    closingSpeed,
-                    normal.scale(playerDeltaSpeed),
-                    player.getDeltaMovement());
-        }
     }
 
     private static Vec3 stabilizePairNormal(Player player, Entity other, Vec3 candidate, ObbCollisionMode mode) {

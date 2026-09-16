@@ -1,7 +1,6 @@
 package com.kltyton.bonehitboxlib;
 
 import com.kltyton.bonehitboxlib.client.BoneHitboxLibNeoForgeClient;
-import com.kltyton.bonehitboxlib.registry.BoneHitboxLibNeoForgeRegistries;
 
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.api.distmarker.Dist;
@@ -10,23 +9,17 @@ import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 
-import com.kltyton.bonehitboxlib.example.entity.vanilla.ravager.ObbRavagerTestEntity;
-import com.kltyton.bonehitboxlib.example.entity.vanilla.zombie.ObbZombieTestEntity;
-import com.kltyton.bonehitboxlib.example.entity.geckolib.GeckoObbTestEntity;
 import com.kltyton.bonehitboxlib.config.common.BoneHitboxConfig;
 import com.kltyton.bonehitboxlib.network.payload.entity.ObbEntityPartsPayload;
 import com.kltyton.bonehitboxlib.network.payload.selection.ObbPartSelectionPayload;
 import com.kltyton.bonehitboxlib.network.payload.contact.ObbContactReportPayload;
 import com.kltyton.bonehitboxlib.network.payload.skill.GeoKeyframeSkillPayload;
-import com.kltyton.bonehitboxlib.server.skill.keyframe.GeoKeyframeSkillDispatcher;
 import com.kltyton.bonehitboxlib.server.hook.vanilla.BoneHitboxServerHooks;
 import com.kltyton.bonehitboxlib.server.network.BoneHitboxServerNetwork;
-import com.kltyton.bonehitboxlib.server.sync.contact.ServerObbContactStore;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
@@ -48,8 +41,6 @@ public final class BoneHitboxLib {
     public BoneHitboxLib(IEventBus eventBus, ModContainer modContainer) {
         modContainer.registerConfig(ModConfig.Type.CLIENT, BoneHitboxConfig.CLIENT_SPEC);
         modContainer.registerConfig(ModConfig.Type.SERVER, BoneHitboxConfig.SERVER_SPEC);
-        BoneHitboxLibNeoForgeRegistries.register(eventBus);
-        eventBus.addListener(BoneHitboxLib::registerAttributes);
         eventBus.addListener(BoneHitboxLib::registerPayloads);
         NeoForge.EVENT_BUS.addListener(BoneHitboxLib::interactEntity);
         NeoForge.EVENT_BUS.addListener(BoneHitboxLib::serverTick);
@@ -61,21 +52,6 @@ public final class BoneHitboxLib {
         eventBus.addListener((net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent event) ->
                 event.enqueueWork(com.kltyton.bonehitboxlib.api.block.shape.VanillaBlockShapes::initializeModBlocks));
         BoneHitboxLibCommon.init();
-    }
-
-    private static void registerAttributes(EntityAttributeCreationEvent event) {
-        event.put(BoneHitboxLibNeoForgeRegistries.OBB_ZOMBIE_TEST.get(), ObbZombieTestEntity.createAttributes().build());
-        event.put(BoneHitboxLibNeoForgeRegistries.SOFT_OBB_RAVAGER_TEST.get(), ObbRavagerTestEntity.createAttributes().build());
-        event.put(BoneHitboxLibNeoForgeRegistries.HARD_OBB_RAVAGER_TEST.get(), ObbRavagerTestEntity.createAttributes().build());
-        if (BoneHitboxLibNeoForgeRegistries.GECKO_OBB_TEST != null) {
-            event.put(BoneHitboxLibNeoForgeRegistries.GECKO_OBB_TEST.get(), GeckoObbTestEntity.createAttributes().build());
-        }
-        if (BoneHitboxLibNeoForgeRegistries.GECKO_SOFT_OBB_TEST_VEHICLE != null) {
-            event.put(BoneHitboxLibNeoForgeRegistries.GECKO_SOFT_OBB_TEST_VEHICLE.get(), GeckoObbTestEntity.createAttributes().build());
-        }
-        if (BoneHitboxLibNeoForgeRegistries.GECKO_HARD_OBB_TEST_VEHICLE != null) {
-            event.put(BoneHitboxLibNeoForgeRegistries.GECKO_HARD_OBB_TEST_VEHICLE.get(), GeckoObbTestEntity.createAttributes().build());
-        }
     }
 
     private static void registerPayloads(RegisterPayloadHandlersEvent event) {
