@@ -117,4 +117,4 @@ blockModelBlacklist = ["minecraft:chest", "minecraft:trapped_chest"]
 
 ## 许可证
 
-[CC0-1.0](LICENSE)。
+[LGPL-3.0-only](LICENSE)。

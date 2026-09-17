@@ -32,4 +32,4 @@ Build outputs are under each loader's build/libs directory. Fabric requires Fabr
 
 ## Acknowledgements and license
 
-See the [project acknowledgements](../../README.md#acknowledgements) for Eden Realm, Mob Battle, Spark-Core, GeckoLib and the loader/configuration infrastructure. License: [CC0-1.0](LICENSE).
+See the [project acknowledgements](../../README.md#acknowledgements) for Eden Realm, Mob Battle, Spark-Core, GeckoLib and the loader/configuration infrastructure. License: [LGPL-3.0-only](LICENSE).

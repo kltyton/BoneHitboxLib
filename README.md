@@ -117,4 +117,4 @@ Thanks to their authors and maintainers. Third-party project names and licenses 
 
 ## License
 
-[CC0-1.0](LICENSE).
+[LGPL-3.0-only](LICENSE).

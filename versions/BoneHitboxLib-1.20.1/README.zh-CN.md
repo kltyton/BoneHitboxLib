@@ -32,4 +32,4 @@
 
 ## 鸣谢与许可证
 
-Eden Realm、Mob Battle、Spark-Core、GeckoLib 及加载器和配置基础设施的具体贡献见[项目鸣谢](../../README.zh-CN.md#鸣谢)。许可证：[CC0-1.0](LICENSE)。
+Eden Realm、Mob Battle、Spark-Core、GeckoLib 及加载器和配置基础设施的具体贡献见[项目鸣谢](../../README.zh-CN.md#鸣谢)。许可证：[LGPL-3.0-only](LICENSE)。

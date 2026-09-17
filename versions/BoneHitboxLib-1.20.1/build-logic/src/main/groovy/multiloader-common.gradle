@@ -64,7 +64,7 @@ tasks.withType(Javadoc).configureEach {
 
 tasks.withType(Jar).configureEach {
     includeEmptyDirs = false
-    from(rootProject.file('LICENSE')) {
+    from(rootProject.files('LICENSE', 'COPYING')) {
         rename { "${it}_${mod_name}" }
     }
 }
