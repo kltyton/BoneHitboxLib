@@ -10,12 +10,13 @@
 
 | Minecraft | 库版本 | 加载器 | Java | 源码工程 |
 | --- | --- | --- | --- | --- |
-| 26.2 | 0.2.1 | Fabric / NeoForge | 25 | 仓库根目录 |
+| 26.2 | 0.2.2 | NeoForge | 25 | 仓库根目录 |
+| 26.2 | 0.2.1 | Fabric | 25 | 仓库根目录 |
 | 26.1.2 | 0.2.0 | Fabric / NeoForge | 25 | [26.1.2](versions/BoneHitboxLib-26.1.2) |
 | 1.21.1 | 0.2.0 | Fabric / NeoForge | 21 | [1.21.1](versions/BoneHitboxLib-1.21.1) |
 | 1.20.1 | 0.2.0 | Fabric / Forge | 17 | [1.20.1](versions/BoneHitboxLib-1.20.1) |
 
-每个版本都是独立 Gradle 工程。客户端与服务端应使用匹配的 Minecraft、加载器和库构建。0.2.1 当前只适用于 26.2。
+每个 Minecraft 版本都是独立 Gradle 工程。客户端与服务端应使用匹配的 Minecraft、加载器和库构建。
 
 ## 主要功能
 
@@ -33,6 +34,32 @@
 锁定依赖见[版本指南](versions/README.zh-CN.md)。构建对应加载器工程可得到安装包。`-sources.jar`、`-javadoc.jar` 是开发资料，不是可安装模组。
 
 ## 实体接入
+
+NeoForge 26.2 可从 Sighs Maven 引用：
+
+```groovy
+repositories {
+    exclusiveContent {
+        forRepository { maven { url = 'https://maven.sighs.cc/repository/maven-public/' } }
+        filter { includeModule('com.kltyton', 'bonehitboxlib-neoforge-26.2') }
+    }
+}
+dependencies {
+    implementation 'com.kltyton:bonehitboxlib-neoforge-26.2:0.2.2'
+}
+```
+
+已追踪 GeckoLib 实体在视野外仍按客户端逻辑刻推进控制器与关键帧。附近被剔除的模型通过独立延迟收集器提供碰撞几何；原版距离与视锥判断使用采集的模型边界，采样绘制任务不进入正常绘制队列。冻结实体保留动画暂停语义。
+
+```mermaid
+flowchart LR
+    T[客户端逻辑刻] --> A[控制器时间轴与关键帧]
+    A --> S[服务端动画心跳与技能回调]
+    C[相机剔除] --> G[附近模型几何采样]
+    G --> O[OBB碰撞与部位选择]
+    G --> V{原版剔除允许绘制}
+    V -->|是| R[正常绘制队列]
+```
 
 实现 `BoneHitboxEntity` 并注册参与处理的部位，例如：
 

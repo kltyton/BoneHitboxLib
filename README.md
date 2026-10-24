@@ -10,12 +10,13 @@ A Minecraft library that derives oriented bounding boxes (OBBs) from model geome
 
 | Minecraft | Library version | Loaders | Java | Source project |
 | --- | --- | --- | --- | --- |
-| 26.2 | 0.2.1 | Fabric / NeoForge | 25 | Repository root |
+| 26.2 | 0.2.2 | NeoForge | 25 | Repository root |
+| 26.2 | 0.2.1 | Fabric | 25 | Repository root |
 | 26.1.2 | 0.2.0 | Fabric / NeoForge | 25 | [26.1.2](versions/BoneHitboxLib-26.1.2) |
 | 1.21.1 | 0.2.0 | Fabric / NeoForge | 21 | [1.21.1](versions/BoneHitboxLib-1.21.1) |
 | 1.20.1 | 0.2.0 | Fabric / Forge | 17 | [1.20.1](versions/BoneHitboxLib-1.20.1) |
 
-Each version is an independent Gradle project. Use matching Minecraft, loader and library builds on the client and server. Version 0.2.1 currently applies to 26.2 only.
+Each Minecraft version is an independent Gradle project. Use matching Minecraft, loader and library builds on the client and server.
 
 ## Features
 
@@ -33,6 +34,32 @@ Use the JAR for your Minecraft version and loader. Put it in `mods/` on both sid
 Pinned dependency versions are listed in the [version guide](versions/README.md). Build the matching loader project to produce an installable JAR. Files ending in `-sources.jar` or `-javadoc.jar` are developer artifacts, not installable mods.
 
 ## Entity integration
+
+For NeoForge 26.2, resolve the library from Sighs Maven:
+
+```groovy
+repositories {
+    exclusiveContent {
+        forRepository { maven { url = 'https://maven.sighs.cc/repository/maven-public/' } }
+        filter { includeModule('com.kltyton', 'bonehitboxlib-neoforge-26.2') }
+    }
+}
+dependencies {
+    implementation 'com.kltyton:bonehitboxlib-neoforge-26.2:0.2.2'
+}
+```
+
+Tracked GeckoLib controllers advance on client ticks while outside the camera view. Nearby culled models still provide collision geometry through a separate deferred collector. Native distance and frustum checks use the sampled model bounds; sampled draw tasks never enter the normal draw queue. Frozen entities retain their paused animation state.
+
+```mermaid
+flowchart LR
+    T[Client tick] --> A[Controller timeline and keyframes]
+    A --> S[Server animation heartbeat and skill callbacks]
+    C[Camera culling] --> G[Nearby model geometry sample]
+    G --> O[OBB collision and selection]
+    G --> V{Native culling allows drawing}
+    V -->|Yes| R[Normal draw queue]
+```
 
 Implement `BoneHitboxEntity` and register the parts that participate. For example, the registration method can use:
 

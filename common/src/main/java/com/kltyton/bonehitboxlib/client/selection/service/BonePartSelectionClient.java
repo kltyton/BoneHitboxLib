@@ -1,6 +1,7 @@
 package com.kltyton.bonehitboxlib.client.selection.service;
 
 import com.kltyton.bonehitboxlib.client.selection.model.VisualPartId;
+import com.kltyton.bonehitboxlib.client.render.capture.CulledEntityCapture;
 import com.kltyton.bonehitboxlib.client.skill.keyframe.GeoKeyframeSkillClientQueue;
 import com.kltyton.bonehitboxlib.client.skill.keyframe.GeoKeyframeSkillClientTicker;
 
@@ -103,6 +104,10 @@ public final class BonePartSelectionClient {
 
         GeoKeyframeSkillClientTicker.tick(minecraft);
         com.kltyton.bonehitboxlib.client.render.item.HeldItemCapture.captureLocalPlayer(minecraft);
+        Vec3 cameraPosition = minecraft.gameRenderer.mainCamera().position();
+        synchronized (LOCK) {
+            RECORDED_PARTS.replaceAll((id, part) -> part.relativeTo(cameraPosition));
+        }
         long currentGameTime = minecraft.level.getGameTime();
         STABLE_PAIR_NORMALS.entrySet().removeIf(entry -> currentGameTime - entry.getValue().gameTime() > 3L);
 
@@ -140,6 +145,7 @@ public final class BonePartSelectionClient {
     }
 
     public static boolean record(VisualPartId id, PartBounds bounds, GeoObbAnimationState animationState) {
+        CulledEntityCapture.record(id, bounds.renderBounds());
         ObbBoneState bone = registeredBone(id);
         if (bone == null) {
             return false;
@@ -151,7 +157,8 @@ public final class BonePartSelectionClient {
 
         synchronized (LOCK) {
             RECORDED_PARTS.put(id, new VisualPart(id, bounds, bone,
-                    animationState == null ? GeoObbAnimationState.NONE : animationState));
+                    animationState == null ? GeoObbAnimationState.NONE : animationState,
+                    Minecraft.getInstance().gameRenderer.mainCamera().position()));
         }
         return true;
     }
@@ -327,6 +334,7 @@ public final class BonePartSelectionClient {
             activeSupport = null;
             GeoKeyframeSkillClientQueue.clear();
             GeoKeyframeSkillClientTicker.clear();
+            CulledEntityCapture.clear();
             syncSelection(null);
         }
     }
@@ -1213,7 +1221,12 @@ public final class BonePartSelectionClient {
         return false;
     }
 
-    private record VisualPart(VisualPartId id, PartBounds bounds, ObbBoneState bone, GeoObbAnimationState animationState) {
+    private record VisualPart(VisualPartId id, PartBounds bounds, ObbBoneState bone,
+            GeoObbAnimationState animationState, Vec3 captureCamera) {
+        private VisualPart relativeTo(Vec3 camera) {
+            return captureCamera.equals(camera) ? this : new VisualPart(id,
+                    bounds.translateRenderSpace(captureCamera.subtract(camera)), bone, animationState, camera);
+        }
     }
 
     private record GeometryPart(ObbBoneState bone, ObbGeometry geometry) {

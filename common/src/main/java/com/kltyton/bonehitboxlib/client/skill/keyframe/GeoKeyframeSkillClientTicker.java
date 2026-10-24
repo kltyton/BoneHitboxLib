@@ -53,7 +53,9 @@ public final class GeoKeyframeSkillClientTicker {
             }
 
             try {
-                var renderState = minecraft.getEntityRenderDispatcher().extractEntity(entity, 1.0F);
+                // GeckoLib 5.5.3 reserves partialTick=1 for frozen animation sampling.
+                float partialTick = level.tickRateManager().isEntityFrozen(entity) ? 1.0F : 0.0F;
+                var renderState = minecraft.getEntityRenderDispatcher().extractEntity(entity, partialTick);
                 if (com.kltyton.bonehitboxlib.compat.geckolib.GeckoLibCompat.isLoaded()) {
                     var states = com.kltyton.bonehitboxlib.client.compat.geckolib.skill.GeoAnimationSnapshots.capture(renderState);
                     com.kltyton.bonehitboxlib.client.selection.service.BonePartSelectionClient.recordAnimations(entity.getId(), states);

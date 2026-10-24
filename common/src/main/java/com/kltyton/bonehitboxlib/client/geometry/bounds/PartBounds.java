@@ -33,6 +33,13 @@ public record PartBounds(AABB renderBounds, AABB localBounds, VoxelShape localSh
         return new BoundsBuilder(pose);
     }
 
+    public PartBounds translateRenderSpace(Vec3 translation) {
+        return new PartBounds(renderBounds.move(translation), localBounds, localShape,
+                new Matrix4f().translation((float) translation.x, (float) translation.y, (float) translation.z)
+                        .mul(localToRender),
+                new Matrix4f(renderToLocal).translate((float) -translation.x, (float) -translation.y, (float) -translation.z));
+    }
+
     public Matrix4f localToWorld(Vec3 cameraPosition) {
         return new Matrix4f()
                 .translation((float) cameraPosition.x(), (float) cameraPosition.y(), (float) cameraPosition.z())

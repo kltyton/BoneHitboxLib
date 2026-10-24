@@ -118,11 +118,34 @@ publishing {
         register('mavenJava', MavenPublication) {
             artifactId base.archivesName.get()
             from components.java
+            pom {
+                name = mod_name
+                description = project.description
+                url = 'https://github.com/kltyton/BoneHitboxLib'
+                licenses {
+                    license {
+                        name = 'LGPL-3.0-only'
+                        url = 'https://www.gnu.org/licenses/lgpl-3.0.html'
+                    }
+                }
+                withXml {
+                    asNode().dependencies.dependency.findAll { it.groupId.text() == 'com.geckolib' }.each {
+                        it.appendNode('optional', 'true')
+                    }
+                }
+            }
         }
     }
     repositories {
         maven {
-            url System.getenv('local_maven_url')
+            name = 'Sighs'
+            url = uri('https://maven.sighs.cc/repository/maven-releases/')
+            credentials {
+                username = System.getenv('SIGH_PUBLISH_USER')
+                password = System.getenv('SIGH_PUBLISH_PASSWORD')
+            }
         }
     }
 }
+
+tasks.withType(GenerateModuleMetadata).configureEach { enabled = false }
