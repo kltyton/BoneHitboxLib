@@ -10,7 +10,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.jspecify.annotations.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 /** Continuous block collision with native vertical support and sliding along authored slanted faces. */
 public final class BlockShapeCollision {
@@ -43,7 +43,7 @@ public final class BlockShapeCollision {
         return new Vec3(resolved.x, y + resolved.y, resolved.z);
     }
 
-    private static ConvexPart.@Nullable SweepHit firstHit(AABB box, Vec3 movement, List<VoxelShape> shapes) {
+    private static @Nullable ConvexPart.SweepHit firstHit(AABB box, Vec3 movement, List<VoxelShape> shapes) {
         ConvexPart.SweepHit earliest = null;
         for (VoxelShape shape : shapes) {
             if (shape instanceof CompoundShape compound) {
@@ -59,7 +59,7 @@ public final class BlockShapeCollision {
         return earliest;
     }
 
-    private static ConvexPart.@Nullable SweepHit sweepBox(AABB moving, AABB obstacle, Vec3 movement) {
+    private static @Nullable ConvexPart.SweepHit sweepBox(AABB moving, AABB obstacle, Vec3 movement) {
         double entry = Double.NEGATIVE_INFINITY, exit = Double.POSITIVE_INFINITY;
         Vec3 normal = Vec3.ZERO;
         for (Direction.Axis axis : Direction.Axis.values()) {
@@ -97,7 +97,8 @@ public final class BlockShapeCollision {
         if (includeBorder && entity != null && level.getWorldBorder().isInsideCloseToBorder(entity, expanded)) {
             result.add(level.getWorldBorder().getCollisionShape());
         }
-        for (VoxelShape shape : level.getBlockCollisionsFromContext(context, expanded)) { result.add(shape); }
+        BlockShapeCandidatesCompat.append(level, entity, context, expanded, result);
         return result;
     }
 }
+

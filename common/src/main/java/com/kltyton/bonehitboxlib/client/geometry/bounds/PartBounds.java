@@ -21,11 +21,7 @@ public record PartBounds(AABB renderBounds, AABB localBounds, VoxelShape localSh
 
     public static PartBounds fromVanillaCube(Matrix4f pose, ModelPart.Cube cube) {
         BoundsBuilder builder = builder(pose);
-        for (ModelPart.Polygon polygon : cube.polygons) {
-            for (ModelPart.Vertex vertex : polygon.vertices()) {
-                builder.include(vertex.worldX(), vertex.worldY(), vertex.worldZ());
-            }
-        }
+        VanillaCubeCapture.include(cube, builder);
         return builder.build();
     }
 
@@ -128,7 +124,7 @@ public record PartBounds(AABB renderBounds, AABB localBounds, VoxelShape localSh
         private double localMaxZ = Double.NEGATIVE_INFINITY;
 
         private BoundsBuilder(Matrix4f pose) {
-            this.pose = new Matrix4f(pose);
+            this.pose = VanillaCubeCapture.pose(pose);
         }
 
         public void include(float x, float y, float z) {

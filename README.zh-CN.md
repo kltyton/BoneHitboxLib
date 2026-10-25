@@ -8,15 +8,18 @@
 
 ## 支持版本
 
-| Minecraft | 库版本 | 加载器 | Java | 源码工程 |
+| Minecraft | 库版本 | 加载器 | Java | 目标工程 |
 | --- | --- | --- | --- | --- |
-| 26.2 | 0.2.2 | NeoForge | 25 | 仓库根目录 |
-| 26.2 | 0.2.1 | Fabric | 25 | 仓库根目录 |
-| 26.1.2 | 0.2.0 | Fabric / NeoForge | 25 | [26.1.2](versions/BoneHitboxLib-26.1.2) |
-| 1.21.1 | 0.2.0 | Fabric / NeoForge | 21 | [1.21.1](versions/BoneHitboxLib-1.21.1) |
-| 1.20.1 | 0.2.0 | Fabric / Forge | 17 | [1.20.1](versions/BoneHitboxLib-1.20.1) |
+| 26.2 | 0.3.0 | Fabric | 25 | [fabric-26.2](targets/fabric-26.2) |
+| 26.2 | 0.3.0 | NeoForge | 25 | [neoforge-26.2](targets/neoforge-26.2) |
+| 26.1.2 | 0.3.0 | Fabric | 25 | [fabric-26.1.2](targets/fabric-26.1.2) |
+| 26.1.2 | 0.3.0 | NeoForge | 25 | [neoforge-26.1.2](targets/neoforge-26.1.2) |
+| 1.21.1 | 0.3.0 | Fabric | 21 | [fabric-1.21.1](targets/fabric-1.21.1) |
+| 1.21.1 | 0.3.0 | NeoForge | 21 | [neoforge-1.21.1](targets/neoforge-1.21.1) |
+| 1.20.1 | 0.3.0 | Fabric | 17 | [fabric-1.20.1](targets/fabric-1.20.1) |
+| 1.20.1 | 0.3.0 | Forge | 17 | [forge-1.20.1](targets/forge-1.20.1) |
 
-每个 Minecraft 版本都是独立 Gradle 工程。客户端与服务端应使用匹配的 Minecraft、加载器和库构建。
+所有目标共享 `common/src/main` 中与版本和加载器无关的代码，并从 `common/src/compat` 选取 Minecraft 与加载器适配。每个 `targets/<loader>-<minecraft>` 目录都是独立 Gradle 工程。客户端与服务端应使用匹配的 Minecraft、加载器和库构建。
 
 ## 主要功能
 
@@ -31,7 +34,29 @@
 
 选择匹配 Minecraft 版本和加载器的 JAR，放入需要此库的客户端与服务端 `mods/` 目录。Fabric 还需要匹配的 Fabric API 和 Forge Config API Port。GeckoLib 为可选依赖；使用 GeckoLib 模型或关键帧技能时安装对应版本。
 
-锁定依赖见[版本指南](versions/README.zh-CN.md)。构建对应加载器工程可得到安装包。`-sources.jar`、`-javadoc.jar` 是开发资料，不是可安装模组。
+八个目标的发行模块见[版本与 Maven 坐标指南](docs/versions/README.zh-CN.md)。构建对应目标工程可得到安装包。`-sources.jar`、`-javadoc.jar` 是开发资料，不是可安装模组。
+
+## Maven 坐标
+
+0.3.0 版本发布在 `com.kltyton` 组下。公共 API 模块为 `bonehitboxlib-common-<minecraft>`；各加载器模块为 `bonehitboxlib-<loader>-<minecraft>`。加载器产物是运行时模组 JAR，common 产物提供编译期 API 类型。按目标将精确模块限定到 Sighs Maven 仓库：
+
+```groovy
+repositories {
+    exclusiveContent {
+        forRepository { maven { url = 'https://maven.sighs.cc/repository/maven-public/' } }
+        filter {
+            includeModule('com.kltyton', 'bonehitboxlib-common-26.2')
+            includeModule('com.kltyton', 'bonehitboxlib-neoforge-26.2')
+        }
+    }
+}
+dependencies {
+    compileOnly 'com.kltyton:bonehitboxlib-common-26.2:0.3.0'
+    runtimeOnly 'com.kltyton:bonehitboxlib-neoforge-26.2:0.3.0'
+}
+```
+
+其他目标替换为版本表中的加载器和 Minecraft 版本；common API 坐标使用相同的 Minecraft 版本。
 
 ## 实体接入
 
@@ -45,11 +70,12 @@ repositories {
     }
 }
 dependencies {
-    implementation 'com.kltyton:bonehitboxlib-neoforge-26.2:0.2.2'
+    compileOnly 'com.kltyton:bonehitboxlib-common-26.2:0.3.0'
+    runtimeOnly 'com.kltyton:bonehitboxlib-neoforge-26.2:0.3.0'
 }
 ```
 
-已追踪 GeckoLib 实体在视野外仍按客户端逻辑刻推进控制器与关键帧。附近被剔除的模型通过独立延迟收集器提供碰撞几何；原版距离与视锥判断使用采集的模型边界，采样绘制任务不进入正常绘制队列。冻结实体保留动画暂停语义。
+26.2 中，已追踪 GeckoLib 实体在视野外仍按客户端逻辑刻推进控制器与关键帧；附近被剔除的模型通过独立延迟收集器提供碰撞几何，原版距离与视锥判断使用采集的模型边界，采样绘制任务不进入正常绘制队列。冻结实体保留动画暂停语义。其他目标版本保持原有行为。
 
 ```mermaid
 flowchart LR
@@ -103,25 +129,31 @@ blockModelWhitelist = ["minecraft:*"]
 blockModelBlacklist = ["minecraft:chest", "minecraft:trapped_chest"]
 ```
 
-白名单仅限制范围，不会自行开启几何模式。配置位置、自动多格方块和接入示例见[方块形状](docs/block_shapes.md)。26.2 的 0.2.1 版本公开了 `ModelShapeCache.buildForElements(JsonArray, Direction)` 及其结果类型，供已持有模型元素的调用方复用。
+白名单仅限制范围，不会自行开启几何模式。配置位置、自动多格方块和接入示例见[方块形状](docs/block_shapes.md)。26.2 公开了 `ModelShapeCache.buildForElements(JsonArray, Direction)` 及其结果类型，供已持有模型元素的调用方复用。
 
 ## 构建
 
-根工程对应 Minecraft 26.2。构建其他版本时，先进入 `versions/` 内对应目录。使用随附的 Gradle Wrapper；可由 Java 25 启动构建，各工程分别声明目标工具链。
+根工程使用 KltytonTemple `3cfe9ad` 控制器。每个 `targets/<loader>-<minecraft>` 工程都有自己的 Gradle Wrapper，并声明目标 Java 工具链。单独构建一个目标时，在目标目录运行 Wrapper：
 
 ```powershell
+cd .\targets\neoforge-26.2
 .\gradlew.bat build
-.\gradlew.bat :fabric:runClient
-.\gradlew.bat :neoforge:runClient
 ```
 
-1.20.1 工程使用 `:forge:runClient`。Linux 或 macOS 使用 `./gradlew`。产物位于各加载器的 `build/libs/`。构建从锁定的 Minecraft 资源生成原版方块几何；已有手写或编辑器导出的运行时模型、动画和贴图仍作为普通资源维护。
+从仓库根目录也可通过控制器的 `build_<target>` 任务构建单个目标，或用 `buildAllTargets` 构建全部八个目标；目标名中的 `-` 和 `.` 会替换为 `_`：
 
-## 边界与验证
+```powershell
+.\gradlew.bat build_neoforge_26_2
+.\gradlew.bat buildAllTargets
+```
+
+Linux 或 macOS 使用 `./gradlew` 替代 `gradlew.bat`。产物位于各目标的 `build/libs/`。构建从锁定的 Minecraft 资源生成原版方块几何；已有手写或编辑器导出的运行时模型、动画和贴图仍作为普通资源维护。
+
+## 运行边界
 
 实体姿态和 GeckoLib marker 由客户端辅助提供。服务端验证追踪关系、注册键、有限几何、范围和上报预算；接入方仍须根据自己的服务端状态授权技能。这不构成完整的服务端动画模拟或反作弊系统。
 
-方块物理使用已打包的模型元素。客户端资源包、动画渲染器和特殊渲染流程不会自动改变服务端碰撞。动态方块及其他碰撞修改需要进行兼容性验收。
+方块物理使用已打包的模型元素。客户端资源包、动画渲染器和特殊渲染流程不会自动改变服务端碰撞。这份静态模型数据不描述运行时变化的形状。
 
 
 ## 文档
@@ -130,7 +162,7 @@ blockModelBlacklist = ["minecraft:chest", "minecraft:trapped_chest"]
 - [客户端选择与高亮](docs/client_obb_selection.md)
 - [模型方块形状](docs/block_shapes.md)
 - [包结构与 API 迁移](docs/package_layout.md)
-- [版本与依赖指南](versions/README.zh-CN.md)
+- [版本与 Maven 坐标指南](docs/versions/README.zh-CN.md)
 
 ## 鸣谢
 

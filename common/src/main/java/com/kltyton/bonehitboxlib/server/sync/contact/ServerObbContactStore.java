@@ -297,7 +297,7 @@ public final class ServerObbContactStore {
         ActiveCollision fallback = normalCandidates.stream()
                 .max(Comparator.comparingInt(ServerObbContactStore::contactStabilityPriority)
                         .thenComparingDouble(active -> active.correction.lengthSqr()))
-                .orElse(normalCandidates.getFirst());
+                .orElse(normalCandidates.get(0));
         Vec3 fallbackCorrection = mode == ObbCollisionMode.SOFT
                 ? new Vec3(fallback.correction.x(), 0.0, fallback.correction.z())
                 : fallback.correction;
@@ -579,7 +579,7 @@ public final class ServerObbContactStore {
             moving.verticalCollisionBelow = movement.y() > 0.0;
         }
         if (movement.y() > 1.0E-5) {
-            moving.setOnGroundWithMovement(true, moving.horizontalCollision, movement);
+            ServerObbGroundCompat.setOnGround(moving, movement);
             moving.resetFallDistance();
         }
     }
@@ -627,7 +627,7 @@ public final class ServerObbContactStore {
         Vec3 movement = finiteCorrection(partMotion.movement());
         if (movement.lengthSqr() > 1.0E-10) {
             passenger.move(MoverType.SHULKER_BOX, movement);
-            passenger.setOnGroundWithMovement(true, passenger.horizontalCollision, movement);
+            ServerObbGroundCompat.setOnGround(passenger, movement);
             passenger.resetFallDistance();
         }
         return true;
@@ -842,3 +842,4 @@ public final class ServerObbContactStore {
         }
     }
 }
+

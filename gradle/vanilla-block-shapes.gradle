@@ -3,8 +3,9 @@ import groovy.json.JsonSlurper
 import java.util.zip.ZipFile
 
 // Produce server-safe geometry data from the exact Minecraft artifact resolved by ModDev.
-def generatedShapes = layout.projectDirectory.dir('src/generated/resources')
-def minecraftArtifact = layout.buildDirectory.file("moddev/artifacts/vanilla-${neo_form_version}.jar")
+def generatedShapes = rootProject.layout.projectDirectory.dir("../../common/build/${rootProject.projectDir.name}/generated/resources/vanilla-models")
+def suffix = minecraft_version.startsWith('26.') ? '.jar' : '-client-extra-aka-minecraft-resources.jar'
+def minecraftArtifact = layout.buildDirectory.file("moddev/artifacts/vanilla-${neo_form_version}${suffix}")
 def generateVanillaBlockShapes = tasks.register('generateVanillaBlockShapes') {
     group = 'data generation'
     description = 'Extracts packaged vanilla block model geometry for both logical sides.'
@@ -53,10 +54,4 @@ def generateVanillaBlockShapes = tasks.register('generateVanillaBlockShapes') {
         output.setText(JsonOutput.toJson([minecraft: minecraft_version, states: selectedStates, models: selectedModels]) + '\n', 'UTF-8')
         logger.lifecycle("Generated block model geometry: ${selectedStates.size()} blocks, ${selectedModels.size()} models")
     }
-}
-sourceSets.main.resources.srcDir(generatedShapes)
-tasks.named('processResources') { dependsOn generateVanillaBlockShapes }
-tasks.named('sourcesJar') { dependsOn generateVanillaBlockShapes }
-artifacts {
-    commonResources(generatedShapes.asFile) { builtBy generateVanillaBlockShapes }
 }

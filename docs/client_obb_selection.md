@@ -9,6 +9,10 @@
 
 Each snapshot contains local bounds, an OBB-derived world broad-phase bound, local/world matrices, composable attributes, collision mode, and optional Geo animation state. Vanilla entity AABBs are not used to decide OBB-to-OBB contact. / 每个快照包含本地边界、由 OBB 推导的世界粗筛范围、本地/世界矩阵、可组合属性、碰撞模式及可选 Geo 动画状态；OBB 接触判定不使用原版实体 AABB。
 
+## Culled model sampling / 被剔除模型的采样
+
+In 26.2, within 32 blocks, a culled `BoneHitboxEntity` is sampled to extend its culling bounds to its model bounds. The sample runs the real model and layer callbacks with a private `SubmitNodeStorage`; deferred draw tasks stay out of the active frame. Vanilla distance and frustum checks still control ordinary drawing using the extended bounds. Other versions keep their previous capture behavior. / 26.2 中，32 格内被视锥剔除的 `BoneHitboxEntity` 会被采样，并把剔除边界扩展到真实模型边界。采样使用私有 `SubmitNodeStorage` 运行模型和渲染层回调，延迟绘制任务不会进入当前帧。常规绘制仍由原版距离与视锥检查依据扩展后的边界决定。其他版本保持原有捕获行为。
+
 ## Held items / 手持物
 
 `held_item:left_item` and `held_item:right_item` use actual `ItemInHandLayer` transforms and item-layer extents. Each render layer produces one enclosing OBB; internally rotated pieces within a layer are enclosed together. Flat item geometry receives a small nonzero thickness. Empty hands produce no item OBB. / 左右手持物使用实际手臂变换、物品 display 变换和渲染层范围；每层生成一个包围 OBB，层内独立旋转的小部件会合并包围，平面物品保留极薄厚度，空手不生成物品框。

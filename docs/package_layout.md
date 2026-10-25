@@ -2,6 +2,22 @@
 
 The source tree is grouped by responsibility. Parent packages are namespaces only; implementation classes live in focused leaf packages. The only intentional root classes are mod entrypoints and shared constants. / 源码按职责分类；父包只作为命名空间，具体类位于职责明确的叶子包。根包仅保留 Mod 入口和共享常量。
 
+## Target and Shared Source Layout / 目标与共享源码布局
+
+The root Gradle controller is KltytonTemple `3cfe9ad`. It dispatches builds to eight independent projects under `targets/`; each project has its own Wrapper and loader metadata. Java implementation is shared from `common/src/main` and selected from `common/src/compat` for the active Minecraft family/version and loader. / 根 Gradle 控制器为 KltytonTemple `3cfe9ad`，负责向 `targets/` 下八个独立工程分派构建；每个工程有自己的 Wrapper 和加载器元数据。Java 实现位于 `common/src/main`，并按当前 Minecraft 大版本/版本和加载器从 `common/src/compat` 选取适配层。
+
+```mermaid
+flowchart TD
+    R[KltytonTemple root controller<br/>per-target tasks and buildAllTargets] --> T[targets/loader-minecraft<br/>independent Gradle project and Wrapper]
+    T --> C[common/src/main<br/>shared API and runtime]
+    T --> M[common/src/compat/minecraft/family-or-version<br/>Minecraft adapters]
+    T --> L[common/src/compat/loader/family-or-version<br/>Fabric, Forge and NeoForge adapters]
+    T --> X[common/src/compat/minecraft/post_1_20<br/>shared post-1.20 compatibility layer where selected]
+    T --> D[target src/main/resources<br/>loader metadata and target resources]
+```
+
+The common build selects the shared, Minecraft family/version, optional `post_1_20`, loader and loader family/version source layers for its target. Loader metadata, plugin configuration, dependency pins, wrapper files and target-specific resources stay in the corresponding `targets/<loader>-<minecraft>` project. The target projects are Fabric and NeoForge for 26.2, 26.1.2 and 1.21.1, plus Fabric and Forge for 1.20.1. / common 构建按目标选择共享、Minecraft 大版本/具体版本、适用时的 `post_1_20`、加载器及加载器大版本/具体版本源码层。加载器元数据、插件配置、依赖版本、Wrapper 文件和目标专用资源保留在对应的 `targets/<loader>-<minecraft>` 工程中。目标组合为 26.2、26.1.2、1.21.1 的 Fabric 与 NeoForge，以及 1.20.1 的 Fabric 与 Forge。
+
 ## Public API / 公共 API
 
 - `api.block.shape`, `api.block.shape.geometry`: packaged model extraction, AABB/OBB modes, automatic multicell blocks and convex shape operations / 打包模型提取、AABB/OBB 选择、自动多格方块与凸几何运算。
@@ -44,7 +60,7 @@ The source tree is grouped by responsibility. Parent packages are namespaces onl
 - `mixin.block`: model shapes, exact compound intersections and native entity movement integration / 模型形状、凸几何相交与原版实体移动接入。
 - `mixin.combat`, `mixin.combat.projectile`, `mixin.entity`, `mixin.entity.player|projectile`: common mixins by target behavior / 按目标行为拆分的公共 Mixin。
 - `mixin.client.collision`, `mixin.client.render`: client movement and rendering hooks / 客户端移动与渲染挂钩。
-- Loader modules contain their entrypoints, client hooks and transport wiring. / 加载器模块包含入口、客户端挂钩和网络接线。
+- Loader-specific hooks and transport wiring are grouped under `common/src/compat/<loader>`. / 加载器专用挂钩和网络接线位于 `common/src/compat/<loader>`。
 
 ## Breaking Package Migration / 破坏性包迁移
 

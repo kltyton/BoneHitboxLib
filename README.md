@@ -8,15 +8,18 @@ A Minecraft library that derives oriented bounding boxes (OBBs) from model geome
 
 ## Supported versions
 
-| Minecraft | Library version | Loaders | Java | Source project |
+| Minecraft | Library version | Loader | Java | Target project |
 | --- | --- | --- | --- | --- |
-| 26.2 | 0.2.2 | NeoForge | 25 | Repository root |
-| 26.2 | 0.2.1 | Fabric | 25 | Repository root |
-| 26.1.2 | 0.2.0 | Fabric / NeoForge | 25 | [26.1.2](versions/BoneHitboxLib-26.1.2) |
-| 1.21.1 | 0.2.0 | Fabric / NeoForge | 21 | [1.21.1](versions/BoneHitboxLib-1.21.1) |
-| 1.20.1 | 0.2.0 | Fabric / Forge | 17 | [1.20.1](versions/BoneHitboxLib-1.20.1) |
+| 26.2 | 0.3.0 | Fabric | 25 | [fabric-26.2](targets/fabric-26.2) |
+| 26.2 | 0.3.0 | NeoForge | 25 | [neoforge-26.2](targets/neoforge-26.2) |
+| 26.1.2 | 0.3.0 | Fabric | 25 | [fabric-26.1.2](targets/fabric-26.1.2) |
+| 26.1.2 | 0.3.0 | NeoForge | 25 | [neoforge-26.1.2](targets/neoforge-26.1.2) |
+| 1.21.1 | 0.3.0 | Fabric | 21 | [fabric-1.21.1](targets/fabric-1.21.1) |
+| 1.21.1 | 0.3.0 | NeoForge | 21 | [neoforge-1.21.1](targets/neoforge-1.21.1) |
+| 1.20.1 | 0.3.0 | Fabric | 17 | [fabric-1.20.1](targets/fabric-1.20.1) |
+| 1.20.1 | 0.3.0 | Forge | 17 | [forge-1.20.1](targets/forge-1.20.1) |
 
-Each Minecraft version is an independent Gradle project. Use matching Minecraft, loader and library builds on the client and server.
+All targets share the version-neutral code in `common/src/main` and select Minecraft- and loader-specific adapters from `common/src/compat`. Each `targets/<loader>-<minecraft>` directory is an independent Gradle project. Use matching Minecraft, loader and library builds on the client and server.
 
 ## Features
 
@@ -31,7 +34,29 @@ Each Minecraft version is an independent Gradle project. Use matching Minecraft,
 
 Use the JAR for your Minecraft version and loader. Put it in `mods/` on both sides where the library is required. Fabric also requires its matching Fabric API and Forge Config API Port. GeckoLib is optional; install the matching version when using GeckoLib models or keyframe skills.
 
-Pinned dependency versions are listed in the [version guide](versions/README.md). Build the matching loader project to produce an installable JAR. Files ending in `-sources.jar` or `-javadoc.jar` are developer artifacts, not installable mods.
+The [version and Maven coordinate guide](docs/versions/README.md) lists all eight target artifacts. Build the matching target project to produce an installable JAR. Files ending in `-sources.jar` or `-javadoc.jar` are developer artifacts, not installable mods.
+
+## Maven coordinates
+
+Version `0.3.0` is published under `com.kltyton`. The common API module is `bonehitboxlib-common-<minecraft>`; each loader module is `bonehitboxlib-<loader>-<minecraft>`. The loader artifact is the runtime mod JAR, while the common artifact supplies compile-time API types. Add the exact modules for the target you use to the Sighs Maven repository:
+
+```groovy
+repositories {
+    exclusiveContent {
+        forRepository { maven { url = 'https://maven.sighs.cc/repository/maven-public/' } }
+        filter {
+            includeModule('com.kltyton', 'bonehitboxlib-common-26.2')
+            includeModule('com.kltyton', 'bonehitboxlib-neoforge-26.2')
+        }
+    }
+}
+dependencies {
+    compileOnly 'com.kltyton:bonehitboxlib-common-26.2:0.3.0'
+    runtimeOnly 'com.kltyton:bonehitboxlib-neoforge-26.2:0.3.0'
+}
+```
+
+Replace `neoforge` and `26.2` with one of the loader/version pairs in the target table. The common API coordinate uses the same Minecraft version.
 
 ## Entity integration
 
@@ -45,11 +70,12 @@ repositories {
     }
 }
 dependencies {
-    implementation 'com.kltyton:bonehitboxlib-neoforge-26.2:0.2.2'
+    compileOnly 'com.kltyton:bonehitboxlib-common-26.2:0.3.0'
+    runtimeOnly 'com.kltyton:bonehitboxlib-neoforge-26.2:0.3.0'
 }
 ```
 
-Tracked GeckoLib controllers advance on client ticks while outside the camera view. Nearby culled models still provide collision geometry through a separate deferred collector. Native distance and frustum checks use the sampled model bounds; sampled draw tasks never enter the normal draw queue. Frozen entities retain their paused animation state.
+In 26.2, tracked GeckoLib controllers advance on client ticks while outside the camera view, and nearby culled models provide collision geometry through a separate deferred collector. Native distance and frustum checks use the sampled model bounds; sampled draw tasks never enter the normal draw queue. Frozen entities retain their paused animation state. Other target versions keep their previous behavior.
 
 ```mermaid
 flowchart LR
@@ -103,25 +129,31 @@ blockModelWhitelist = ["minecraft:*"]
 blockModelBlacklist = ["minecraft:chest", "minecraft:trapped_chest"]
 ```
 
-The whitelist limits scope; it does not enable a mode by itself. See [block shapes](docs/block_shapes.md) for configuration locations, automatic multi-cell blocks and integration examples. In 26.2 version 0.2.1, `ModelShapeCache.buildForElements(JsonArray, Direction)` and its result types are public for consumers that already have model elements.
+The whitelist limits scope; it does not enable a mode by itself. See [block shapes](docs/block_shapes.md) for configuration locations, automatic multi-cell blocks and integration examples. In 26.2, `ModelShapeCache.buildForElements(JsonArray, Direction)` and its result types are public for consumers that already have model elements.
 
 ## Building
 
-The root project targets Minecraft 26.2. For another version, first change into its directory under `versions/`. Use the bundled Gradle Wrapper; Java 25 can launch the build, and each project declares its target toolchain.
+The root uses the KltytonTemple `3cfe9ad` controller. Each `targets/<loader>-<minecraft>` project has its own Gradle Wrapper and declares its Java toolchain. To build one target, run its wrapper from that directory:
 
 ```powershell
+cd .\targets\neoforge-26.2
 .\gradlew.bat build
-.\gradlew.bat :fabric:runClient
-.\gradlew.bat :neoforge:runClient
 ```
 
-Use `:forge:runClient` instead of `:neoforge:runClient` in the 1.20.1 project. On Linux or macOS, use `./gradlew`. Build outputs are in each loader's `build/libs/`. The build generates vanilla block geometry from the pinned Minecraft assets. Existing authored runtime models, animations and textures remain regular resources.
+From the repository root, the controller exposes per-target `build_<target>` tasks and `buildAllTargets`; target names replace `-` and `.` with `_`:
 
-## Boundaries and validation
+```powershell
+.\gradlew.bat build_neoforge_26_2
+.\gradlew.bat buildAllTargets
+```
+
+On Linux or macOS, use `./gradlew` in place of `gradlew.bat`. Build outputs are in each target's `build/libs/`. The build generates vanilla block geometry from the pinned Minecraft assets. Existing authored runtime models, animations and textures remain regular resources.
+
+## Operating boundaries
 
 Entity poses and GeckoLib markers are client-assisted. The server validates tracking, registered keys, finite geometry, bounds and report budgets; integrations must authorize skills using their own server state. This is not a complete server-side animation simulation or anti-cheat system.
 
-Block physics uses packaged model elements. Client resource packs, animated renderers and special rendering paths do not automatically redefine server collision. Compatibility with dynamic blocks and other collision modifications requires integration testing.
+Block physics uses packaged model elements. Client resource packs, animated renderers and special rendering paths do not automatically redefine server collision. The packaged static model data does not describe shapes that change at runtime.
 
 
 ## Documentation
@@ -130,7 +162,7 @@ Block physics uses packaged model elements. Client resource packs, animated rend
 - [Client selection and highlights](docs/client_obb_selection.md)
 - [Model-derived block shapes](docs/block_shapes.md)
 - [Package layout and API migration](docs/package_layout.md)
-- [Version and dependency guide](versions/README.md)
+- [Version and Maven coordinate guide](docs/versions/README.md)
 
 ## Acknowledgements
 

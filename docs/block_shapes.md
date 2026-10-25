@@ -67,10 +67,10 @@ blockModelBlacklist = ["minecraft:chest", "minecraft:trapped_chest"]
 
 白名单只限制范围，不会自行开启任何模式。黑白名单同时约束本库 API 提供的模型 OBB：被排除的模型 OBB 回退为模型 AABB，其他原生形状保持原样。自动多格方块保留各占位格裁切和放置范围；名单允许时，强制模式使用原始模型 OBB，否则采用注册时指定的 AABB/OBB 模式。关闭两个开关并清空名单可恢复方块原有形状及接入方指定模式。
 
-构建任务 `generateVanillaBlockShapes` 从锁定的 Minecraft 资源提取全部原版 blockstate 与模型元素，生成 `common/src/generated/resources/data/bonehitboxlib/block_shapes/vanilla.json`。模组模型在注册完成后预处理，沿用模型父级、旋转、rescale、加权 variants、multipart 和位置种子。查询只读取预编译形状与当前配置，不在碰撞或渲染时读取模型文件。
+目标任务 `generateVanillaBlockShapes` 从已解析的 Minecraft 资源提取全部原版 blockstate 与模型元素，生成 `common/build/<loader>-<minecraft>/generated/resources/vanilla-models/data/bonehitboxlib/block_shapes/vanilla.json`，并由对应目标的 common 资源源集加载。模组模型在注册完成后预处理，沿用模型父级、旋转、rescale、加权 variants、multipart 和位置种子。查询只读取预编译形状与当前配置，不在碰撞或渲染时读取模型文件。
 
-客户端资源包、运行时特殊渲染器和 Gecko 动画不改变这份服务端物理几何。动态或特殊方块、第三方形状覆盖、配置热重载和多人同步效果须人工验收。
+客户端资源包、运行时特殊渲染器和 Gecko 动画不改变这份服务端物理几何。动态或特殊方块、第三方形状覆盖、配置热重载和多人同步效果不由此处的模型几何定义。
 
-## 0.2.1 公共元素解析入口
+## 26.2 公共元素解析入口
 
-`ModelShapeCache.buildForElements(JsonArray, Direction)` 返回公开 `ShapeSet`，供下游离线几何检查或已获得模型元素的调用方复用同一算法。`Cell`、`ShapeSet.localShape(Cell)` 同时公开；`localShapes` 与 `occupiedCells` 在结果构造时复制为不可修改集合。已有按资源 ID 的缓存和多格基类行为不变。Eden Realm 当前 26.2 NeoForge 消费工程使用该 API，并内置本库 0.2.1 jar。
+`ModelShapeCache.buildForElements(JsonArray, Direction)` 返回公开 `ShapeSet`，供下游几何工具或已获得模型元素的调用方复用同一算法。`Cell`、`ShapeSet.localShape(Cell)` 同时公开；`localShapes` 与 `occupiedCells` 在结果构造时复制为不可修改集合。该元素解析入口只在 26.2 目标公开；其他版本保留内部缓存实现。

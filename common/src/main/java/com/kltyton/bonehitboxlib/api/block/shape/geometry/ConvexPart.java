@@ -7,7 +7,7 @@ import java.util.function.UnaryOperator;
 import net.minecraft.core.Direction;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.jspecify.annotations.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 /** An authored oriented cuboid, optionally clipped at occupied block-cell boundaries. */
 public final class ConvexPart {
@@ -46,10 +46,10 @@ public final class ConvexPart {
         List<Vec3> axes = new ArrayList<>(WORLD_AXES);
         for (List<Vec3> face : faces) {
             Vec3 normal = normal(face);
-            if (normal.dot(face.getFirst().subtract(center)) < 0) {
+            if (normal.dot(face.get(0).subtract(center)) < 0) {
                 normal = normal.scale(-1);
             }
-            facePlanes.add(new Plane(normal, normal.dot(face.getFirst())));
+            facePlanes.add(new Plane(normal, normal.dot(face.get(0))));
             addAxis(axes, normal);
             for (int i = 0; i < face.size(); i++) {
                 Vec3 from = face.get(i), to = face.get((i + 1) % face.size());
@@ -280,10 +280,10 @@ public final class ConvexPart {
 
     public Vec3 closestPoint(Vec3 point) {
         if (contains(point)) { return point; }
-        Vec3 closest = vertices.getFirst();
+        Vec3 closest = vertices.get(0);
         for (List<Vec3> face : faces) {
             for (int i = 1; i + 1 < face.size(); i++) {
-                Vec3 candidate = closestOnTriangle(point, face.getFirst(), face.get(i), face.get(i + 1));
+                Vec3 candidate = closestOnTriangle(point, face.get(0), face.get(i), face.get(i + 1));
                 if (candidate.distanceToSqr(point) < closest.distanceToSqr(point)) { closest = candidate; }
             }
         }
@@ -321,9 +321,9 @@ public final class ConvexPart {
     }
 
     private static Vec3 normal(List<Vec3> face) {
-        Vec3 first = face.get(1).subtract(face.getFirst());
+        Vec3 first = face.get(1).subtract(face.get(0));
         for (int i = 2; i < face.size(); i++) {
-            Vec3 cross = first.cross(face.get(i).subtract(face.getFirst()));
+            Vec3 cross = first.cross(face.get(i).subtract(face.get(0)));
             if (cross.lengthSqr() > EPSILON * EPSILON) { return unit(cross); }
         }
         return Vec3.ZERO;
@@ -381,3 +381,4 @@ public final class ConvexPart {
         Plane opposite() { return new Plane(normal.scale(-1), -offset); }
     }
 }
+

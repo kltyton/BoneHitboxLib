@@ -1,0 +1,12 @@
+apply plugin: 'java-library'
+java.toolchain.languageVersion = JavaLanguageVersion.of(rootProject.property('java_version') as int)
+apply plugin: rootProject.property('moddev_plugin').toString()
+layout.buildDirectory.set(new File(rootProject.projectDir, 'build/model-assets'))
+ext.minecraft_version = rootProject.property('minecraft_version').toString()
+ext.neo_form_version = rootProject.property('neo_form_version').toString()
+if (minecraft_version == '1.20.1') {
+    legacyForge { mcpVersion = minecraft_version }
+} else {
+    neoForge { neoFormVersion = neo_form_version }
+}
+apply from: file('../vanilla-block-shapes.gradle')

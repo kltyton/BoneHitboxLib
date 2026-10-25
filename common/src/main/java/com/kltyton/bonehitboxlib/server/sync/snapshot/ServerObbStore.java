@@ -25,6 +25,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.util.Mth;
 
@@ -80,9 +81,11 @@ public final class ServerObbStore {
                     || !Float.isFinite(transform.determinant()) || Math.abs(transform.determinant()) < 1.0E-9) { return; }
             // Derive both inverse and broad-phase bounds from the accepted transform.
             ObbGeometry geometry = ObbGeometry.fromLocalBounds(payloadPart.localBounds(), transform);
+            AABB entityBounds = entity.getBoundingBox().inflate(radius);
+            AABB geometryBounds = geometry.worldBounds();
             if (!ObbReportValidation.finite(geometry.worldBounds())
-                    || !entity.getBoundingBox().inflate(radius).contains(geometry.worldBounds().getMinPosition())
-                    || !entity.getBoundingBox().inflate(radius).contains(geometry.worldBounds().getMaxPosition())) { return; }
+                    || !entityBounds.contains(new Vec3(geometryBounds.minX, geometryBounds.minY, geometryBounds.minZ))
+                    || !entityBounds.contains(new Vec3(geometryBounds.maxX, geometryBounds.maxY, geometryBounds.maxZ))) { return; }
             if (!hitboxEntity.bonehitboxlib$obbState().isRegistered(boneKey)) { return; }
             Optional<ObbBoneState> bone = hitboxEntity.bonehitboxlib$obbState().resolve(boneKey);
             if (bone.isEmpty()) { return; }
@@ -269,3 +272,4 @@ public final class ServerObbStore {
         }
     }
 }
+

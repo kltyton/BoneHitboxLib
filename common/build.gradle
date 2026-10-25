@@ -1,60 +1,108 @@
-plugins {
-    id 'multiloader-common'
-    id 'net.neoforged.moddev'
-}
+import groovy.json.JsonOutput
+import org.gradle.api.artifacts.ProjectDependency
 
-neoForge {
-    neoFormVersion = neo_form_version
-    // Automatically enable AccessTransformers if the file exists
-    def at = file('src/main/resources/META-INF/accesstransformer.cfg')
-    if (at.exists()) {
-        accessTransformers.from(at.absolutePath)
-    }
-}
+plugins { id 'java-library' }
 
+def commonRoot = buildFile.canonicalFile.parentFile
+def templeRoot = commonRoot.parentFile
+def identity = new Properties()
+new File(templeRoot, 'gradle.properties').withReader('UTF-8') { identity.load(it) }
+def loader = rootProject.property('loader').toString()
+def minecraft = rootProject.property('minecraft_version').toString()
+def targetId = "${loader}-${minecraft}"
+def activeFile = new File(templeRoot, '.temple/active-target')
+def active = (activeFile.isFile() ? activeFile.getText('UTF-8').trim() : identity.getProperty('temple_default_target')) == targetId
+group = identity.getProperty('mod_group_id')
+version = identity.getProperty('mod_version')
+base.archivesName = "${identity.getProperty('mod_id')}-common-${minecraft}"
+layout.buildDirectory.set(new File(commonRoot, "build/${targetId}"))
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(rootProject.property('java_version') as int)
+    withSourcesJar()
+}
+apply from: new File(templeRoot, 'gradle/target-conventions/repositories.gradle')
 dependencies {
-    compileOnly("net.fabricmc:sponge-mixin:0.17.3+mixin.0.8.7")
-    compileOnly("com.geckolib:geckolib-common-${minecraft_version}:${geckolib_version}")
-    // CN: 开发时默认加载 GeckoLib；-Pwithout_geckolib 用于验证真实可选 classpath。EN: Load GeckoLib in dev by default; use -Pwithout_geckolib to verify a genuinely optional runtime classpath.
-    if (!project.hasProperty('without_geckolib')) {
-        runtimeOnly("com.geckolib:geckolib-common-${minecraft_version}:${geckolib_version}")
-    }
-    api("fuzs.forgeconfigapiport:forgeconfigapiport-common-neoforgeapi:${forge_config_api_port_version}")
+    compileOnly 'net.fabricmc:sponge-mixin:0.17.3+mixin.0.8.7'
+    compileOnly 'io.github.llamalad7:mixinextras-common:0.5.0'
+    def configApi = minecraft == '1.20.1' ? 'forgeconfigapiport-common' : 'forgeconfigapiport-common-neoforgeapi'
+    compileOnly "fuzs.forgeconfigapiport:${configApi}:${rootProject.property('forge_config_api_port_version')}"
 }
 
-configurations {
-    commonJava {
-        canBeResolved = false
-        canBeConsumed = true
+def family = minecraft.startsWith('26.') ? '26' : 'legacy'
+def layers = [new File(commonRoot, 'src/main'),
+              new File(commonRoot, "src/compat/minecraft/${family}"),
+              minecraft in ['1.20.1', '1.21.1', '26.1.2'] ? new File(commonRoot, 'src/compat/minecraft/pre_26_2') : null,
+              minecraft == '1.20.1' ? null : new File(commonRoot, 'src/compat/minecraft/post_1_20'),
+              new File(commonRoot, "src/compat/minecraft/${minecraft}"),
+              new File(commonRoot, "src/compat/${loader}"),
+              new File(commonRoot, "src/compat/${loader}/${family}"),
+              new File(commonRoot, "src/compat/${loader}/${minecraft}")].findAll { it != null && it.isDirectory() }
+def javaDirectories = layers.collect { new File(it, 'java') }.findAll { it.isDirectory() }
+def resourceDirectories = [new File(commonRoot, "build/${targetId}/generated/resources/vanilla-models")] +
+        layers.reverse().collect { new File(it, 'resources') }.findAll { it.isDirectory() }
+def packageName = identity.getProperty('mod_java_package', identity.getProperty('mod_group_id'))
+def constants = new File(layout.buildDirectory.get().asFile, 'generated/sources/temple')
+def constantFile = new File(constants, "${packageName.replace('.', '/')}/BuildInfo.java")
+def constantText = "package ${packageName};\n\npublic final class BuildInfo {\n" +
+        "    public static final String MOD_ID = ${JsonOutput.toJson(identity.getProperty('mod_id'))};\n" +
+        "    private BuildInfo() {}\n}\n"
+if (!constantFile.isFile() || constantFile.getText('UTF-8') != constantText) {
+    constantFile.parentFile.mkdirs()
+    constantFile.setText(constantText, 'UTF-8')
+}
+sourceSets {
+    main {
+        java.setSrcDirs(active ? javaDirectories + [constants] : [])
+        resources.setSrcDirs(active ? resourceDirectories : [])
     }
-    commonResources {
-        canBeResolved = false
-        canBeConsumed = true
+    test {
+        java.setSrcDirs(active ? [new File(commonRoot, 'src/test/java')] : [])
+        resources.setSrcDirs(active ? [new File(commonRoot, 'src/test/resources')] : [])
     }
 }
+tasks.named('compileJava', JavaCompile) { source javaDirectories, constants }
+tasks.named('compileTestJava', JavaCompile) { source new File(commonRoot, 'src/test/java') }
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = rootProject.property('java_version') as int
+}
+tasks.named('processResources', ProcessResources) {
+    from resourceDirectories
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+tasks.named('processTestResources', ProcessResources) { from new File(commonRoot, 'src/test/resources') }
+tasks.named('sourcesJar', Jar) {
+    from javaDirectories
+    from constants
+    from resourceDirectories
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+def commonPath = path
+def commonSourceSets = sourceSets
+rootProject.afterEvaluate {
+    def sdk = rootProject.configurations.compileClasspath.copyRecursive { dependency ->
+        !(dependency instanceof ProjectDependency && dependency.path == commonPath)
+    }
+    commonSourceSets.main.compileClasspath += sdk
+    commonSourceSets.test.compileClasspath += sdk
+}
+ext.templeResourceDirectories = resourceDirectories
+ext.templeSourceDirectories = javaDirectories + [constants]
+apply from: new File(templeRoot, 'gradle/target-conventions/ide-sources.gradle')
 
-artifacts {
-    commonJava sourceSets.main.java.sourceDirectories.singleFile
-    commonResources sourceSets.main.resources.sourceDirectories.singleFile
-}
-
-// Implement mcgradleconventions loader attribute
-def loaderAttribute = Attribute.of('io.github.mcgradleconventions.loader', String)
-['apiElements', 'runtimeElements', 'sourcesElements', 'javadocElements'].each { variant ->
-    configurations.named(variant) {
-        attributes {
-            attribute(loaderAttribute, 'common')
-        }
+// Loader entrypoints are merged into the installable mod, but not the common compile API.
+def platformClasses = ['com/kltyton/bonehitboxlib/BoneHitboxLib.class',
+                       'com/kltyton/bonehitboxlib/BoneHitboxLib$*.class',
+                       'com/kltyton/bonehitboxlib/BoneHitboxLib.java',
+                       'com/kltyton/bonehitboxlib/client/BoneHitboxLib*',
+                       'com/kltyton/bonehitboxlib/client/compat/geckolib/BoneHitboxLib*',
+                       'com/kltyton/bonehitboxlib/event/BoneHitboxLib*',
+                       'com/kltyton/bonehitboxlib/network/BoneHitboxLib*']
+tasks.named('jar', Jar) { exclude platformClasses }
+tasks.named('sourcesJar', Jar) { exclude platformClasses }
+tasks.withType(Jar).configureEach {
+    from([new File(templeRoot, 'LICENSE'), new File(templeRoot, 'COPYING')]) {
+        rename { name -> "${name}_${identity.getProperty('mod_id')}" }
     }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
-sourceSets.configureEach {
-    [it.compileClasspathConfigurationName, it.runtimeClasspathConfigurationName].each { variant->
-        configurations.named(variant) {
-            attributes {
-                attribute(loaderAttribute, 'common')
-            }
-        }
-    }
-}
-
-apply from: rootProject.file('gradle/vanilla-block-shapes.gradle')

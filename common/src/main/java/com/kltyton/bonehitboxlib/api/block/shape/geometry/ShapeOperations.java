@@ -79,7 +79,7 @@ public final class ShapeOperations {
             if (onlyFirst) { result.addAll(difference(a, b)); }
             if (onlySecond) { result.addAll(difference(b, a)); }
         }
-        return CompoundShape.of(result).move(origin);
+        return ShapeApiCompat.move(CompoundShape.of(result), origin);
     }
 
     private static List<ConvexPart> difference(List<ConvexPart> first, List<ConvexPart> second) {
@@ -115,3 +115,4 @@ public final class ShapeOperations {
         return new Vec3((b.minX + b.maxX) * 0.5, (b.minY + b.maxY) * 0.5, (b.minZ + b.maxZ) * 0.5);
     }
 }
+

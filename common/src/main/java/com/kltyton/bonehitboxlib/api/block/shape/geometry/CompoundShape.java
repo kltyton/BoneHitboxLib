@@ -12,7 +12,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BitSetDiscreteVoxelShape;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.jspecify.annotations.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * VoxelShape entry point with exact convex geometry for model OBBs.
@@ -49,7 +49,7 @@ public final class CompoundShape extends VoxelShape {
     /** Keeps axis-aligned parts on the exact OBB collision path when explicitly forced. */
     public static VoxelShape ofObb(List<ConvexPart> parts) {
         if (parts.isEmpty()) { return Shapes.empty(); }
-        AABB bounds = parts.getFirst().bounds();
+        AABB bounds = parts.get(0).bounds();
         for (int i = 1; i < parts.size(); i++) { bounds = bounds.minmax(parts.get(i).bounds()); }
         return new CompoundShape(List.copyOf(parts), Vec3.ZERO, bounds);
     }
@@ -70,7 +70,6 @@ public final class CompoundShape extends VoxelShape {
     @Override
     public VoxelShape optimize() { return this; }
 
-    @Override
     protected boolean isCubeLike() { return false; }
 
     @Override
@@ -111,10 +110,10 @@ public final class CompoundShape extends VoxelShape {
         Vec3 delta = to.subtract(from);
         Vec3 normal = nearest.normal();
         return new BlockHitResult(from.add(delta.scale(nearest.inside() ? 0.001 : nearest.time())),
-                Direction.getApproximateNearest(normal.x, normal.y, normal.z), pos, nearest.inside());
+                ShapeApiCompat.directionFromNormal(normal), pos, nearest.inside());
     }
 
-    public ConvexPart.@Nullable SweepHit sweep(AABB moving, Vec3 movement) {
+    public @Nullable ConvexPart.SweepHit sweep(AABB moving, Vec3 movement) {
         AABB localBox = moving.move(-offset.x, -offset.y, -offset.z);
         ConvexPart.SweepHit earliest = null;
         for (ConvexPart part : parts) {
@@ -212,3 +211,4 @@ public final class CompoundShape extends VoxelShape {
         return Optional.ofNullable(closest).map(value -> value.add(offset));
     }
 }
+
